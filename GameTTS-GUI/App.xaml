@@ -1,0 +1,25 @@
+﻿<Application x:Class="GameTTS_GUI.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:GameTTS_GUI"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <Image x:Key="Play" Source="/Resources/play.png"/>
+        <Image x:Key="Settings" Source="/Resources/settings.png"/>
+        <Image x:Key="Sound" Source="/Resources/sound-icon.png"/>
+        <Image x:Key="Download" Source="/Resources/download.png"/>
+        <Image x:Key="CSV" Source="/Resources/csv-outline.png"/>
+        <Image x:Key="Folder" Source="/Resources/open-folder.png"/>
+        
+        <DataTemplate x:Key="ButtonCell">
+            <ContentControl Content="{Binding Path=Column0}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="FirstCell">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="{StaticResource Download}" Width="20" Height="20"/>
+            </StackPanel>
+        </DataTemplate>
+
+    </Application.Resources>
+</Application>

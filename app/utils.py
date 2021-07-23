@@ -7,9 +7,9 @@ import numpy as np
 
 # init paths
 APP_FOLDER = Path(Path(__name__).parent.resolve())
-APP_CONFIG_PATH = Path(APP_FOLDER, "static_web/resource/", "app-config.json")
+APP_CONFIG_PATH = Path(APP_FOLDER, "resources/", "app-config.json")
 SPEAKER_CONFIG = Path(
-    APP_FOLDER, "static_web/resource/json-mapping/", "speaker_map.json"
+    APP_FOLDER, "resources/json-mapping/", "speaker_map.json"
 )
 TTS_CONFIG_PATH = Path(APP_FOLDER, "vits/model", "config.json")
 TTS_MODEL_PATH = Path(APP_FOLDER, "vits/model", "G_700000.pth")
@@ -49,7 +49,7 @@ def create_samples(synthesizer):
             {"speech_speed": 1.0, "speech_var_a": 0.56, "speech_var_b": 0.7},
         )
         print(name)
-        tmp_file_path = Path("static_web", "resource", "audio-samples", idx + ".wav")
+        tmp_file_path = Path("resources", "audio-samples", idx + ".wav")
         write(tmp_file_path, 22050, audio_data)
 
 

@@ -1,0 +1,88 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameTTS_GUI"
+        xmlns:System="clr-namespace:System;assembly=mscorlib" x:Class="GameTTS_GUI.MainWindow"
+        mc:Ignorable="d"
+        Title="Game TTS" Height="589" Width="848">
+    <TabControl>
+        <TabItem Header="TTS" HorizontalAlignment="Left" Width="64" Height="32" FontSize="16" FontWeight="Bold">
+            <DockPanel LastChildFill="True" Margin="8">
+                <GroupBox Header="Stimme und Text" DockPanel.Dock="Top" Padding="8">
+                    <StackPanel Orientation="Vertical">
+                        <Grid Grid.IsSharedSizeScope="True" DockPanel.Dock="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition SharedSizeGroup="Labels" Width="Auto"/>
+                                <ColumnDefinition SharedSizeGroup="Combo" Width="Auto" MinWidth="256"/>
+                                <ColumnDefinition SharedSizeGroup="Labels" Width="Auto"/>
+                                <ColumnDefinition SharedSizeGroup="Combo" Width="Auto"/>
+                                <ColumnDefinition SharedSizeGroup="Button" Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Margin="0,0,8,0" VerticalAlignment="Center" Content="Spiel:" Width="72" HorizontalAlignment="Right"/>
+                            <ComboBox x:Name="CBGame" Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center" SelectedIndex="0" Height="32">
+
+                            </ComboBox>
+                            <Label Grid.Column="2" VerticalAlignment="Center" Content="Stimme:"/>
+                            <ComboBox x:Name="CBVoice" Margin="0" Grid.Column="3" VerticalAlignment="Center" SelectedIndex="0" Height="32"/>
+                            <Button ToolTip="Aktuelle Stimme probehören." Content="{StaticResource Sound}" Click="PlayVoiceSample" Width="32" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" DockPanel.Dock="Right" Grid.Column="4" Margin="0" />
+
+                        </Grid>
+                        <DockPanel Margin="0,8,0,0">
+                            <Button Content="{StaticResource Play}" ToolTip="Die aktuelle Textzeile mit der gewählten Stimme generieren." Width="32" Click="OnGenerate" Height="32" Margin="8,0" VerticalAlignment="Top"/>
+                            <Button Content="{StaticResource Settings}" ToolTip="Stimm-Einstellungen für die aktuelle Textzeile." Click="OnSettings" Width="32" Margin="0,0,8,0" VerticalAlignment="Top"/>
+                            <Expander Expanded="ShowFileNameBox" Collapsed="HideFileNameBox" ToolTip="Dateiname anzeigen/verstecken" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Button Content="{StaticResource CSV}" DockPanel.Dock="Right" Click="SelectCSV" ToolTip="Eine CSV-Datei für mehrere Dialogzeilen importieren." Width="32" Margin="0,0,8,0" VerticalAlignment="Top"/>
+                            <TextBox x:Name="LineText" DockPanel.Dock="Right" Margin="0" Text="Dies ist ein Blindtext zum Testen von Sprachausgabe." Height="32" VerticalContentAlignment="Center"/>
+                        </DockPanel>
+                        <DockPanel x:Name="FileNamePanel" Margin="0,8,0,0" VerticalAlignment="Center" Visibility="Collapsed">
+                            <Label VerticalAlignment="Center">Dateiname:</Label>
+                            <TextBox x:Name="FileNameBox" Height="32" Margin="19,0,0,0" VerticalAlignment="Center" DockPanel.Dock="Right" FontWeight="Bold"/>
+                        </DockPanel>
+                    </StackPanel>
+
+                </GroupBox>
+                <GroupBox Header="Ausgabe" Grid.Row="2" DockPanel.Dock="Bottom" Padding="8">
+                    <DockPanel>
+                        <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,8">
+                                <Button Content=" Alle exportieren " Background="Green" Foreground="White" Click="ExportAll" Margin="0,0,8,0" ToolTip="Alle Zeilen aus der Liste exportieren." HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Button Content="Alle löschen" Background="Red" Foreground="White" Click="ClearList" ToolTip="Die Liste leeren." HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ProgressBar x:Name="ExportProgressBar" Value="50" Height="16" Margin="0,0,0,8"></ProgressBar>
+                        </StackPanel>
+                        <ListView x:Name="FileList" DockPanel.Dock="Bottom" KeyDown="OnDeleteItem">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="" Width="32" CellTemplate="{StaticResource FirstCell}" />
+                                    <GridViewColumn Header="Sprecher" DisplayMemberBinding="{Binding Voice}" Width="128"/>
+                                    <GridViewColumn Header="Text" DisplayMemberBinding="{Binding Text}" Width="512"/>
+                                    <GridViewColumn Header="Audio" DisplayMemberBinding="{Binding Audio}" Width="128"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </DockPanel>
+                </GroupBox>
+            </DockPanel>
+        </TabItem>
+        <TabItem Header="Einstellungen" FontSize="16" Height="32" FontWeight="Bold">
+            <StackPanel Orientation="Vertical" Margin="8">
+                <Label>Export Pfad:</Label>
+                <DockPanel>
+                    <Button Content="{StaticResource Folder}" Click="SelectExportPath" DockPanel.Dock="Right" FontWeight="Bold" Width="32"></Button>
+                    <TextBox x:Name="ExportPathBox"></TextBox>
+                </DockPanel>
+                <Label>Standard CSV-Datei:</Label>
+                <DockPanel>
+                    <Button Content="{StaticResource Folder}" Click="SelectExportPath" DockPanel.Dock="Right" FontWeight="Bold" Width="32"></Button>
+                    <TextBox x:Name="DefaultCSVBox"></TextBox>
+                </DockPanel>
+            </StackPanel>
+        </TabItem>
+    </TabControl>
+</Window>

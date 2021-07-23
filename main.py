@@ -1,4 +1,3 @@
-import eel
 import sys
 import json
 from datetime import datetime
@@ -25,13 +24,12 @@ try:
 
 except ImportError as err:
     print(err)
-    eel.call_torch_modal()  # call javascript modal if torch not available
 
 
 def synthesize(text, speaker_id, speaker_name, params):
     audio_data = synthesizer.synthesize(text, speaker_id, params)
     cur_timestamp = datetime.now().strftime("%m%d%f")
-    tmp_path = Path("static_web", "tmp")
+    tmp_path = Path("tmp")
 
     if not tmp_path.exists():
         tmp_path.mkdir()
@@ -48,25 +46,20 @@ def synthesize(text, speaker_id, speaker_name, params):
             save_file_path, save_file_name, audio_data, params["file_export_ext"]
         )
 
-    eel.addTableRow(speaker_name, text, str(Path("tmp", ".".join([file_name, "wav"]))))
 
-
-@eel.expose
 def load_config():
     with open(APP_CONFIG_PATH) as json_file:
         config_data = json.load(json_file)
     return config_data
 
 
-@eel.expose
 def save_config(data):
     with open(APP_CONFIG_PATH, "w") as json_file:
         json.dump(data, json_file, indent=4)
 
 
-@eel.expose
 def play_sample(speaker_idx):
-    file_path = Path("static_web", "resource", "audio-samples", speaker_idx + ".wav")
+    file_path = Path("resources", "audio-samples", speaker_idx + ".wav")
 
     if PLATFORM == "Windows":
         winsound.PlaySound(str(file_path), winsound.SND_ASYNC)
@@ -75,7 +68,6 @@ def play_sample(speaker_idx):
         play(audio)
 
 
-@eel.expose
 def process_input(params=None):
     try:
         if params["text"]:
@@ -93,16 +85,13 @@ def process_input(params=None):
                     synthesize(
                         line, params["speaker_id"], params["speaker_name"], params
                     )
-        eel.finishSynthesize()
+        #eel.finishSynthesize()
 
     except Exception as err:
         print(err)
         traceback.print_tb(err.__traceback__)
-        eel.launchErrorModal()(err)
-        eel.finishSynthesize()
 
 
-@eel.expose
 def select_out_dir():
     try:
         root = tk.Tk()
@@ -114,39 +103,37 @@ def select_out_dir():
         return None
 
 
-@eel.expose
 def exit_clean_up():
-    tmp_files = Path("static_web", "tmp").glob("*.*")
+    print("exiting")
+    tmp_files = Path("tmp").glob("*.*")
     for f in tmp_files:
         f.unlink()
     sys.exit(0)
 
 
-# start EEL App
 if __name__ == "__main__":
 
     # create_samples(synthesizer)
 
-    directory = "static_web"
-    app = "chrome"
-    page = "index.html"
-
-    eel_kwargs = dict(
-        host="localhost",
-        port=8080,
-        size=(1050, 750),
-    )
-
-    eel.init(directory)
-
     try:
-        try:
-            eel.start(page, mode=app, **eel_kwargs)
-        except EnvironmentError:
-            # If Chrome isn't found, fallback to Microsoft Edge on Win10 or greater
-            if PLATFORM == "Windows" and int(platform.release()) >= 10:
-                eel.start(page, mode="edge", **eel_kwargs)
-            else:
-                exit_clean_up()
+        args = sys.argv[1:]
+
+        if(len(args) == 9):
+            print("ok...")
+            
+            toProcess = {
+              "text": args[0],
+              "speaker_id": args[1],
+              "speaker_name": args[2],
+              "file_content": args[3],
+              "speech_var_a": args[4],
+              "speech_var_b": args[5],
+              "speech_speed": args[6],
+              "out_path": args[7],
+              "file_export_ext": args[8]
+            }
+            process_input(toProcess)
+        else:
+            print("Invalid num of arguments.")
     except (SystemExit, MemoryError, KeyboardInterrupt):
         exit_clean_up()

@@ -1,0 +1,32 @@
+﻿<Window x:Class="GameTTS_GUI.LineSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameTTS_GUI"
+        mc:Ignorable="d"
+        Title="LineSettings" Height="300" Width="512" WindowStyle="None" WindowStartupLocation="Manual">
+    <GroupBox Header="Spracheinstellungen" FontSize="16" Margin="8">
+        <StackPanel Orientation="Vertical" Margin="8">
+            <DockPanel>
+                <Label>Sprechgeschwindigkeit: </Label>
+                <TextBlock Text="{Binding Speed}" VerticalAlignment="Center" HorizontalAlignment="Right"></TextBlock>
+            </DockPanel>
+            <Slider x:Name="SLSpeed" Value="{Binding Speed}" Minimum="0" Maximum="2" TickFrequency="0.1" TickPlacement="TopLeft" IsSnapToTickEnabled="True"></Slider>
+            <DockPanel>
+                <Label>Varianz A: </Label>
+                <TextBlock Text="{Binding VarianceA}" VerticalAlignment="Center" HorizontalAlignment="Right"></TextBlock>
+            </DockPanel>
+            <Slider x:Name="SLVarA" Value="{Binding VarianceA}" Minimum="0" Maximum="1" TickFrequency="0.01" TickPlacement="TopLeft" IsSnapToTickEnabled="True"></Slider>
+            <DockPanel>
+                <Label>Varianz B</Label>
+                <TextBlock Text="{Binding VarianceB}" VerticalAlignment="Center" HorizontalAlignment="Right"></TextBlock>
+            </DockPanel>
+            <Slider x:Name="SLVarB" Value="{Binding VarianceB}" Minimum="0" Maximum="1" TickFrequency="0.1" TickPlacement="TopLeft" IsSnapToTickEnabled="True"></Slider>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                <Button Content="Zurücksetzen" Click="OnReset" Margin="0,0,8,0" Background="#FFFF5555"/>
+                <Button Content="OK" Click="OnApply" MinWidth="56" Background="#FF57FF3C"/>
+            </StackPanel>
+        </StackPanel>
+    </GroupBox>
+</Window>
