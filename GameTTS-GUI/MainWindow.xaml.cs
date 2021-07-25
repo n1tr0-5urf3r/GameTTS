@@ -71,13 +71,16 @@ namespace GameTTS_GUI
                 CBVoice.ItemsSource = voiceSources[(sender as ComboBox).SelectedIndex];
                 CBVoice.SelectedIndex = 0;
             };
+
+            //restore preferences
+            ExportPathBox.Text = Config.Get.OutputPath;
+            DefaultCSVBox.Text = Config.Get.CsvPathstring;
         }
 
         private void OnGenerate(object sender, RoutedEventArgs e)
         {
             var line = new VoiceLine { Game = CBGame.Text, Voice = CBVoice.Text, Text = LineText.Text };
             
-
             if (!Directory.Exists("tmp"))
                 Directory.CreateDirectory("tmp");
 
@@ -89,7 +92,7 @@ namespace GameTTS_GUI
 
             //call python stuff here
             {
-                var script = @".\..\..\..\run.ps1";
+                var script = Environment.CurrentDirectory + @"\GameTTS\run.ps1";
 
                 ProcessStartInfo processInfo = new ProcessStartInfo()
                 {

@@ -13,5 +13,6 @@ namespace GameTTS_GUI
     /// </summary>
     public partial class App : Application
     {
+
     }
 }

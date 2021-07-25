@@ -1,0 +1,7 @@
+﻿{
+  "ConfigVersion": 1,
+  "OutputPath": "",
+  "CsvPath": "",
+  "OutputFormat": "WAV",
+  "CurrentModel": "G_700000.pth"
+}

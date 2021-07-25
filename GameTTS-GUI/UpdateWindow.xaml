@@ -1,0 +1,68 @@
+﻿<Window x:Class="GameTTS_GUI.UpdateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameTTS_GUI"
+        mc:Ignorable="d"
+        Title="Updates und Abhängigkeiten" WindowStartupLocation="CenterScreen" Height="450" Width="452.062">
+    <StackPanel Orientation="Vertical" Margin="8">
+        <DockPanel>
+            <Label FontSize="16">Python 3.x:</Label>
+            <TextBlock x:Name="TBPythonVersion" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
+        </DockPanel>
+        <DockPanel>
+            <Button Click="OnDownloadPython" IsEnabled="{Binding CanDownloadPython}" DockPanel.Dock="Right" FontWeight="Bold" Width="24" Height="24">
+                <Button.Content>
+                    <Image Source="/GameTTS-GUI;component/Resources/download.png" Width="18" Margin="0,0,4,0"/>
+                </Button.Content>
+            </Button>
+            <ProgressBar x:Name="ProgressPython" IsEnabled="{Binding CanDownloadPython}" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
+        </DockPanel>
+
+        <DockPanel>
+            <Label FontSize="16">eSpeak:</Label>
+            <TextBlock x:Name="TBeSpeakVersion" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
+        </DockPanel>
+        <DockPanel>
+            <Button Click="OnDownloadEspeak" IsEnabled="{Binding CanDownloadEspeak}" DockPanel.Dock="Right" FontWeight="Bold" Width="24" Height="24">
+                <Button.Content>
+                    <Image Source="/GameTTS-GUI;component/Resources/download.png" Width="18" Margin="0,0,4,0"/>
+                </Button.Content>
+            </Button>
+            <ProgressBar x:Name="ProgressEspeak" IsEnabled="{Binding CanDownloadEspeak}" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
+        </DockPanel>
+
+        <DockPanel>
+            <Label FontSize="16">Python Abhängigkeiten:</Label>
+            <TextBlock x:Name="TBDependencies" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
+        </DockPanel>
+        <DockPanel>
+            <Button x:Name="ButtonDLDependencies" Click="OnDownloadDependencies" DockPanel.Dock="Right" FontWeight="Bold" Width="24" Height="24">
+                <Button.Content>
+                    <Image Source="/GameTTS-GUI;component/Resources/download.png" Width="18" Margin="0,0,4,0"/>
+                </Button.Content>
+            </Button>
+            <ProgressBar VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
+        </DockPanel>
+
+        <DockPanel>
+            <Label FontSize="16">Sprachmodell:</Label>
+            <TextBlock x:Name="TBModel" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
+        </DockPanel>
+        <DockPanel>
+            <Button x:Name="ButtonDownloadModel" Click="OnDownloadModel" DockPanel.Dock="Right" FontWeight="Bold" Width="24" Height="24">
+                <Button.Content>
+                    <Image Source="/GameTTS-GUI;component/Resources/download.png" Width="18" Margin="0,0,4,0"/>
+                </Button.Content>
+            </Button>
+            <ProgressBar x:Name="ProgressModel" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
+        </DockPanel>
+        <Separator Height="32" Margin="0"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Abbrechen" Click="OnCancel"></Button>
+            <Button Content="Alle herunterladen" Click="OnDownloadAll" Margin="8,0,0,0"></Button>
+            <Button x:Name="ButtonOK" Content="OK" Click="OnConfirm" Margin="8,0,0,0" Width="64"></Button>
+        </StackPanel>
+    </StackPanel>
+</Window>

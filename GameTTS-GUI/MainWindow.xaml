@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:GameTTS_GUI"
         xmlns:System="clr-namespace:System;assembly=mscorlib" x:Class="GameTTS_GUI.MainWindow"
         mc:Ignorable="d"
-        Title="Game TTS" Height="589" Width="848">
+        Title="Game TTS" WindowStartupLocation="CenterScreen" Height="589" Width="848">
     <TabControl>
         <TabItem Header="TTS" HorizontalAlignment="Left" Width="64" Height="32" FontSize="16" FontWeight="Bold">
             <DockPanel LastChildFill="True" Margin="8">
@@ -25,20 +25,20 @@
                                 <ColumnDefinition SharedSizeGroup="Button" Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Label Margin="0,0,8,0" VerticalAlignment="Center" Content="Spiel:" Width="72" HorizontalAlignment="Right"/>
-                            <ComboBox x:Name="CBGame" Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center" SelectedIndex="0" Height="32">
+                            <ComboBox x:Name="CBGame" ToolTip="Die Auswahl der Sprecher nach je nach Spiel." Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center" SelectedIndex="0" Height="32">
 
                             </ComboBox>
                             <Label Grid.Column="2" VerticalAlignment="Center" Content="Stimme:"/>
-                            <ComboBox x:Name="CBVoice" Margin="0" Grid.Column="3" VerticalAlignment="Center" SelectedIndex="0" Height="32"/>
+                            <ComboBox x:Name="CBVoice" ToolTip="Die Stimme für die zu sprechende Zeile(n)." Margin="0" Grid.Column="3" VerticalAlignment="Center" SelectedIndex="0" Height="32"/>
                             <Button ToolTip="Aktuelle Stimme probehören." Content="{StaticResource Sound}" Click="PlayVoiceSample" Width="32" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" DockPanel.Dock="Right" Grid.Column="4" Margin="0" />
 
                         </Grid>
                         <DockPanel Margin="0,8,0,0">
                             <Button Content="{StaticResource Play}" ToolTip="Die aktuelle Textzeile mit der gewählten Stimme generieren." Width="32" Click="OnGenerate" Height="32" Margin="8,0" VerticalAlignment="Top"/>
                             <Button Content="{StaticResource Settings}" ToolTip="Stimm-Einstellungen für die aktuelle Textzeile." Click="OnSettings" Width="32" Margin="0,0,8,0" VerticalAlignment="Top"/>
-                            <Expander Expanded="ShowFileNameBox" Collapsed="HideFileNameBox" ToolTip="Dateiname anzeigen/verstecken" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Expander Expanded="ShowFileNameBox" Collapsed="HideFileNameBox" ToolTip="Angabe des Dateinamens anzeigen/verstecken" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             <Button Content="{StaticResource CSV}" DockPanel.Dock="Right" Click="SelectCSV" ToolTip="Eine CSV-Datei für mehrere Dialogzeilen importieren." Width="32" Margin="0,0,8,0" VerticalAlignment="Top"/>
-                            <TextBox x:Name="LineText" DockPanel.Dock="Right" Margin="0" Text="Dies ist ein Blindtext zum Testen von Sprachausgabe." Height="32" VerticalContentAlignment="Center"/>
+                            <TextBox x:Name="LineText" DockPanel.Dock="Right" Margin="0" Text="Dies ist ein Blindtext zum Testen von Sprachausgabe." ToolTip="Dies ist das Textfeld zum eingeben des Textes, der gesprochen werden soll." Height="32" VerticalContentAlignment="Center"/>
                         </DockPanel>
                         <DockPanel x:Name="FileNamePanel" Margin="0,8,0,0" VerticalAlignment="Center" Visibility="Collapsed">
                             <Label VerticalAlignment="Center">Dateiname:</Label>
@@ -82,6 +82,13 @@
                     <Button Content="{StaticResource Folder}" Click="SelectExportPath" DockPanel.Dock="Right" FontWeight="Bold" Width="32"></Button>
                     <TextBox x:Name="DefaultCSVBox"></TextBox>
                 </DockPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label>Ausgabeformat: </Label>
+                    <ComboBox SelectedIndex="0">
+                        <System:String>WAV (16 Bit PCM)</System:String>
+                        <System:String>OGG</System:String>
+                    </ComboBox>
+                </StackPanel>
             </StackPanel>
         </TabItem>
     </TabControl>
