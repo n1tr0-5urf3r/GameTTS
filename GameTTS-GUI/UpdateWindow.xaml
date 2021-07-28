@@ -12,12 +12,7 @@
             <TextBlock x:Name="TBPythonVersion" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
         </DockPanel>
         <DockPanel>
-            <Button Click="OnDownloadPython" IsEnabled="{Binding CanDownloadPython}" DockPanel.Dock="Right" FontWeight="Bold" Width="24" Height="24">
-                <Button.Content>
-                    <Image Source="/GameTTS-GUI;component/Resources/download.png" Width="18" Margin="0,0,4,0"/>
-                </Button.Content>
-            </Button>
-            <ProgressBar x:Name="ProgressPython" IsEnabled="{Binding CanDownloadPython}" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
+            <ProgressBar x:Name="ProgressPython" IsEnabled="{Binding CanDownloadPython}" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
         </DockPanel>
 
         <DockPanel>
@@ -25,12 +20,7 @@
             <TextBlock x:Name="TBeSpeakVersion" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
         </DockPanel>
         <DockPanel>
-            <Button Click="OnDownloadEspeak" IsEnabled="{Binding CanDownloadEspeak}" DockPanel.Dock="Right" FontWeight="Bold" Width="24" Height="24">
-                <Button.Content>
-                    <Image Source="/GameTTS-GUI;component/Resources/download.png" Width="18" Margin="0,0,4,0"/>
-                </Button.Content>
-            </Button>
-            <ProgressBar x:Name="ProgressEspeak" IsEnabled="{Binding CanDownloadEspeak}" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
+            <ProgressBar x:Name="ProgressEspeak" IsEnabled="{Binding CanDownloadEspeak}" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
         </DockPanel>
 
         <DockPanel>
@@ -38,12 +28,7 @@
             <TextBlock x:Name="TBDependencies" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
         </DockPanel>
         <DockPanel>
-            <Button x:Name="ButtonDLDependencies" Click="OnDownloadDependencies" DockPanel.Dock="Right" FontWeight="Bold" Width="24" Height="24">
-                <Button.Content>
-                    <Image Source="/GameTTS-GUI;component/Resources/download.png" Width="18" Margin="0,0,4,0"/>
-                </Button.Content>
-            </Button>
-            <ProgressBar VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
+            <ProgressBar x:Name="ProgressPyDependencies" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
         </DockPanel>
 
         <DockPanel>
@@ -51,17 +36,11 @@
             <TextBlock x:Name="TBModel" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
         </DockPanel>
         <DockPanel>
-            <Button x:Name="ButtonDownloadModel" Click="OnDownloadModel" DockPanel.Dock="Right" FontWeight="Bold" Width="24" Height="24">
-                <Button.Content>
-                    <Image Source="/GameTTS-GUI;component/Resources/download.png" Width="18" Margin="0,0,4,0"/>
-                </Button.Content>
-            </Button>
-            <ProgressBar x:Name="ProgressModel" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
+            <ProgressBar x:Name="ProgressModel" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0,0,8,0"></ProgressBar>
         </DockPanel>
         <Separator Height="32" Margin="0"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Abbrechen" Click="OnCancel"></Button>
-            <Button Content="Alle herunterladen" Click="OnDownloadAll" Margin="8,0,0,0"></Button>
             <Button x:Name="ButtonOK" Content="OK" Click="OnConfirm" Margin="8,0,0,0" Width="64"></Button>
         </StackPanel>
     </StackPanel>

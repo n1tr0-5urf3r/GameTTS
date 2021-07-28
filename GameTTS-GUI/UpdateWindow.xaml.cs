@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Newtonsoft.Json;
+using static GameTTS_GUI.Dependencies;
 
 namespace GameTTS_GUI
 {
@@ -30,11 +31,11 @@ namespace GameTTS_GUI
         public bool CanDownloadDependencies { get; private set; }
         public bool CanDownloadModel { get; private set; }
 
-        private bool downloadingAll;
+        private bool downloadingModel;
+        private bool modelDownloaded;
 
         private Dictionary<string, WebClient> downloads = new Dictionary<string, WebClient>();
-
-        private CancellationTokenSource cancelSource = new CancellationTokenSource();
+        private List<InstallTask> installs = new List<InstallTask>();
 
         public UpdateWindow()
         {
@@ -43,6 +44,7 @@ namespace GameTTS_GUI
             DataContext = this;
 
             ContentRendered += OnStartup;
+            Closing += CloseRequest;
         }
 
         //XAML parser would spit out weird errors if this would be called during 
@@ -51,8 +53,14 @@ namespace GameTTS_GUI
         {
             CheckDependencies();
 
+            if (ButtonOK.IsEnabled)
+                OnConfirm(null, null);
+
             //window context for cross-thread UI update
-            Downloader.WindowContext = this;
+            Dependencies.WindowContext = this;
+
+            //download and install all necessary one after the other
+            StartUpdate();
 
             if (ButtonOK.IsEnabled)
                 OnConfirm(null, null);
@@ -66,81 +74,119 @@ namespace GameTTS_GUI
             Close();
         }
 
-        private void OnDownloadPython(object sender, RoutedEventArgs e)
+        private void StartUpdate()
+        {
+            installs.Clear();
+            DownloadModel();
+            QueuePython();
+            QueueEspeak();
+            QueueDependencies();
+            Dependencies.InstallAll(installs);
+        }
+
+        private void QueuePython()
         {
             if (CanDownloadPython)
-                Task.Factory.StartNew(() =>
+            {
+                installs.Add(new InstallTask
                 {
-                    WebClient client = null;
-                    client = Downloader.Download(Config.Get.Dependencies["python"],
-                        "pythonInstall.exe", ProgressPython);
-                    downloads.Add("pyDL", client);
-                    client.DownloadFileCompleted += (s, a) =>
-                    {
-                        Downloader.QueueInstall("pythonInstall.exe", CheckDependencies, () => 
-                        {
-                            MessageBox.Show("Bitte beachten: Bei der Installation das Häkchen bei 'Add Python to PATH' setzen!",
-                                "Hinweis", MessageBoxButton.OK, MessageBoxImage.Information);
-                        });
-                    };
+                    URL = Config.Get.Dependencies["python"],
+                    FilePath = "pythonInstall.exe",
+                    ProgressBar = ProgressPython,
+                    LoadingLabel = TBPythonVersion,
+                    PreInstall = () =>
+                        MessageBox.Show("Bitte beachten: Bei der Installation das Häkchen bei 'Add Python to PATH' setzen!",
+                            "Hinweis", MessageBoxButton.OK, MessageBoxImage.Information),
+                    PostInstall = () => VerifyInstallation("python", "Python", 3)
                 });
+            }
         }
 
-        private void OnDownloadEspeak(object sender, RoutedEventArgs e)
+        private void QueueEspeak()
         {
             if (CanDownloadEspeak)
-                Task.Factory.StartNew(() =>
+            {
+                installs.Add(new InstallTask
                 {
-                    WebClient client = null;
-                    client = Downloader.Download(Config.Get.Dependencies["espeak"],
-                        "espeakInstall.exe", ProgressEspeak);
-                    downloads.Add("speakDL", client);
-                    client.DownloadFileCompleted += (s, a) => Downloader.QueueInstall("espeakInstall.exe", CheckDependencies);
+                    URL = Config.Get.Dependencies["espeak"],
+                    FilePath = "espeakInstall.exe",
+                    ProgressBar = ProgressEspeak,
+                    LoadingLabel = TBeSpeakVersion,
+                    PreInstall = () =>
+                        MessageBox.Show("Bitte beachten: Bei der Installation zusätzlich in ein leeres Feld 'de-de' eintragen.",
+                            "Hinweis", MessageBoxButton.OK, MessageBoxImage.Information),
+                    PostInstall = () => VerifyInstallation("espeak", "speak text-to-speech:")
                 });
+            }
         }
 
-        private void OnDownloadDependencies(object sender, RoutedEventArgs e)
+        private void QueueDependencies()
         {
-            var script = Environment.CurrentDirectory + @"\GameTTS\install.ps1";
-
-            ProcessStartInfo processInfo = new ProcessStartInfo()
+            if(CanDownloadDependencies)
             {
-                FileName = "powershell.exe",
-                Arguments = $"-NoProfile -ExecutionPolicy unrestricted \"{script}\"",
-            };
-
-            var task = Task.Factory.StartNew(() =>
-            {
-                using (Process process = Process.Start(processInfo))
+                installs.Add(new InstallTask
                 {
-                }
-            }).ContinueWith(result => CheckDependencies());
+                    //URL = Config.Get.Dependencies["espeak"], //need url later
+                    FilePath = Environment.CurrentDirectory + @"\GameTTS\install.ps1",
+                    ProgressBar = ProgressPyDependencies,
+                    LoadingLabel = TBDependencies,
+                    PreInstall = () =>
+                        MessageBox.Show("Bitte beachten: Bei der Installation zusätzlich in ein leeres Feld 'de-de' eintragen.",
+                            "Hinweis", MessageBoxButton.OK, MessageBoxImage.Information),
+                });
+            }
         }
 
-        private void OnDownloadModel(object sender, RoutedEventArgs e)
+        private void DownloadModel()
         {
             if (CanDownloadModel)
-                Task.Factory.StartNew(() =>
+            {
+                downloadingModel = true;
+                GDriveDownloader gdl = null;
+                Dependencies.DownloadGDrive(ref gdl, Config.Get.Models[Config.Get.CurrentModel],
+                    @"GameTTS\vits\model\" + Config.Get.CurrentModel, ProgressModel);
+                downloads.Add("modelDL", gdl.Client);
+                gdl.DownloadFileCompleted += (s, a) =>
                 {
-                    downloads.Add("modelDL", Downloader.Download(Config.Get.Models[Config.Get.CurrentModel],
-                        @"GameTTS\vits\model\" + Config.Get.CurrentModel, ProgressModel, true));
-                }).ContinueWith(result => CheckDependencies());
+                    modelDownloaded = true;
+                    CheckDependencies();
+                };
+            }
         }
 
-        private void OnDownloadAll(object sender, RoutedEventArgs e)
-        {
-            downloadingAll = true;
-            OnDownloadPython(null, null);
-            OnDownloadEspeak(null, null);
-        }
+        private void OnCancel(object sender, RoutedEventArgs e) => Close();
 
-        private void OnCancel(object sender, RoutedEventArgs e)
+        private void CloseRequest(object sender, CancelEventArgs e)
         {
-            if(downloads.Count > 0)
-                foreach(var client in downloads.Values)
+            var result = MessageBox.Show("Setup/Update wirklich abbrechen?",
+                                "Hinweis", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.No)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            if (downloads.Count > 0)
+            {
+                foreach (var client in downloads.Values)
                     client.CancelAsync();
-            else
-                this.Close();
+            }
+
+            //remove unfinshed downloads
+            try
+            {
+                if (downloadingModel && !modelDownloaded)
+                    if (File.Exists(@"GameTTS\vits\model\" + Config.Get.CurrentModel))
+                        File.Delete(@"GameTTS\vits\model\" + Config.Get.CurrentModel);
+
+                if (File.Exists("espeakInstall.exe"))
+                    File.Delete("espeakInstall.exe");
+
+                if (File.Exists("pythonInstall.exe"))
+                    File.Delete("pythonInstall.exe");
+            }
+            catch { }
         }
 
         private void CheckDependencies()
@@ -160,7 +206,7 @@ namespace GameTTS_GUI
                 }
                 else
                 {
-                    TBPythonVersion.Text = "k.A.";
+                    TBPythonVersion.Text = "nicht installiert";
                     TBPythonVersion.Foreground = Brushes.Red;
                 }
 
@@ -171,11 +217,11 @@ namespace GameTTS_GUI
                 }
                 else
                 {
-                    TBeSpeakVersion.Text = "k.A.";
+                    TBeSpeakVersion.Text = "nicht installiert";
                     TBeSpeakVersion.Foreground = Brushes.Red;
                 }
 
-                if (!CanDownloadDependencies)
+                if (Directory.Exists(@"GameTTS\.venv"))
                 {
                     TBDependencies.Text = "installiert";
                     TBDependencies.Foreground = Brushes.Green;
@@ -184,9 +230,6 @@ namespace GameTTS_GUI
                 {
                     TBDependencies.Text = "nicht installiert";
                     TBDependencies.Foreground = Brushes.Red;
-
-                    if (downloadingAll)
-                        OnDownloadDependencies(null, null);
                 }
 
                 if (!CanDownloadModel)
@@ -198,13 +241,44 @@ namespace GameTTS_GUI
                 {
                     TBModel.Text = "nicht installiert";
                     TBModel.Foreground = Brushes.Red;
-
-                    if (downloadingAll)
-                        OnDownloadModel(null, null);
                 }
 
                 ButtonOK.IsEnabled = !CanDownloadPython && !CanDownloadEspeak && !CanDownloadDependencies && !CanDownloadModel;
             });
+        }
+
+        private bool VerifyInstallation(string execName, string versionPrefix, int? major = null, int? minor = null)
+        {
+            if (!Dependencies.IsInstalled(execName, versionPrefix, major, minor))
+            {
+                var result = MessageBox.Show("Installation fehlgeschlagen oder abgebrochen. Erneut versuchen?",
+                    "Fehler", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    Dispatcher.Invoke(delegate
+                    {
+                        ProgressPython.Value = 0;
+                        StartUpdate();
+                    });
+                    return false;
+                }
+                else if (result == MessageBoxResult.No)
+                {
+                    Dispatcher.Invoke(delegate
+                    {
+                        Close();
+                    });
+                    return false;
+                }
+            }
+
+            Dispatcher.Invoke(delegate
+            {
+                CheckDependencies();
+            });
+
+            return true;
         }
     }
 }

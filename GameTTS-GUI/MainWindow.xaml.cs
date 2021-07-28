@@ -51,7 +51,7 @@ namespace GameTTS_GUI
 
             //load json voice mapping
             VoiceMapping = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, int>>>
-                (File.ReadAllText("Resources/game_speaker_map.json"));
+                (File.ReadAllText("GameTTS/resources/json-mapping/game_speaker_map.json"));
 
             games = VoiceMapping.Keys.ToArray();
             voiceSources = new List<string>[games.Length];
