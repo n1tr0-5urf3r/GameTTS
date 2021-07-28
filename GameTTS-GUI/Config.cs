@@ -39,7 +39,7 @@ namespace GameTTS_GUI
                 else
                     _instance = new Config();
 
-            _instance.Models = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(@"Resources\json\model_urls.json"));
+            _instance.Models = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(@"Resources\json\model-urls.json"));
             _instance.Dependencies = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(@"Resources\json\dependency-urls.json"));
         }
 

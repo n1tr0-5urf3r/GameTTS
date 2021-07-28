@@ -14,37 +14,79 @@ namespace GameTTS_GUI
     {
         public static Window WindowContext { get; set; }
 
-        public static WebClient Download(string uri, string filePath, ProgressBar progressBar)
-        {
-            WebClient client = null;
-            using (client = new WebClient())
-            {
-                client.DownloadProgressChanged += (s, a) =>//PythonProgress;
-                {
-                    WindowContext.Dispatcher.Invoke(delegate
-                    {
-                        progressBar.Value = GetDLProgress(a);
-                    });
-                };
-                //client.DownloadFileCompleted += PythonDownloadComplete;
-                client.DownloadFileAsync(new Uri(uri), filePath);
-            }
+        private static Queue<InstallTask> installTasks = new Queue<InstallTask>();
+        private static Task currentTask;
+        private static object threadLock = new object();
 
-            return client;
+        public static WebClient Download(string url, string filePath, ProgressBar progressBar, bool useGDrive = false)
+        {
+            if (useGDrive)
+            {
+                GDriveDownloader gdl = null;
+                using (gdl = new GDriveDownloader())
+                {
+                    gdl.DownloadProgressChanged += (s, progress) =>
+                    {
+                        WindowContext.Dispatcher.Invoke(delegate
+                        {
+                            progressBar.Value = progress.ProgressPercentage;
+                        });
+                    };
+                    gdl.DownloadFileAsync(url, filePath);
+                }
+
+                return gdl.Client;
+            }
+            else
+            {
+                var client = new WebClient();
+                using (client = new WebClient())
+                {
+                    client.DownloadProgressChanged += (s, a) =>
+                    {
+                        WindowContext.Dispatcher.Invoke(delegate
+                        {
+                            progressBar.Value = GetDLProgress(a);
+                        });
+                    };
+                    client.DownloadFileAsync(new Uri(url), filePath);
+                }
+
+                return client;
+            }
         }
 
-        public static void Install(string exePath, Action callback = null)
+        public static void QueueInstall(string exePath, Action postInstall = null, Action preInstall = null)
         {
-            var task = Task.Factory.StartNew(() =>
-            {
-                using (Process process = Process.Start(new ProcessStartInfo(exePath)))
-                {
-                    process.WaitForExit();
-                }
-            });
+            var task = new InstallTask { Path = exePath, PostInstall = postInstall, PreInstall = preInstall };
+            task.PostInstall += Install; //after finishing install, check the next in queue
+            installTasks.Enqueue(task);
+            Install();
+        }
 
-            if(callback != null)
-                task.ContinueWith(result => callback);
+        private static void Install()
+        {
+            lock (threadLock)
+            {
+                if (currentTask == null || currentTask.IsCompleted)
+                    if (installTasks.Count > 0)
+                    {
+                        var task = installTasks.Dequeue();
+
+                        task.PreInstall?.Invoke();
+
+                        currentTask = Task.Factory.StartNew(() =>
+                        {
+                            using (Process process = Process.Start(new ProcessStartInfo(task.Path)))
+                            {
+                                process.WaitForExit();
+                            }
+                        });
+
+                        //if (task.Callback != null)
+                        currentTask.ContinueWith(result => task.PostInstall?.Invoke());//.ContinueWith(result => Install());
+                    }
+            }
         }
 
         private static double GetDLProgress(DownloadProgressChangedEventArgs e)
@@ -54,6 +96,13 @@ namespace GameTTS_GUI
             double percentage = bytesIn / totalBytes * 100;
 
             return int.Parse(Math.Truncate(percentage).ToString());
+        }
+
+        private class InstallTask
+        {
+            public string Path { get; set; }
+            public Action PostInstall { get; set; }
+            public Action PreInstall { get; set; }
         }
     }
 }

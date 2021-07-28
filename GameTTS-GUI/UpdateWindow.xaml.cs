@@ -71,13 +71,18 @@ namespace GameTTS_GUI
             if (CanDownloadPython)
                 Task.Factory.StartNew(() =>
                 {
-                    downloads.Add("pyDL", Downloader.Download(Config.Get.Dependencies["python"],
-                        "pythonInstall.exe", ProgressPython));
-                }).ContinueWith(result => 
-                {
-                    MessageBox.Show("Bitte beachten: Bei der Installation das Häkchen bei 'Add Python to PATH' setzen!",
-                        "Hinweis", MessageBoxButton.OK, MessageBoxImage.Information);
-                    Downloader.Install("pythonInstall.exe", CheckDependencies);
+                    WebClient client = null;
+                    client = Downloader.Download(Config.Get.Dependencies["python"],
+                        "pythonInstall.exe", ProgressPython);
+                    downloads.Add("pyDL", client);
+                    client.DownloadFileCompleted += (s, a) =>
+                    {
+                        Downloader.QueueInstall("pythonInstall.exe", CheckDependencies, () => 
+                        {
+                            MessageBox.Show("Bitte beachten: Bei der Installation das Häkchen bei 'Add Python to PATH' setzen!",
+                                "Hinweis", MessageBoxButton.OK, MessageBoxImage.Information);
+                        });
+                    };
                 });
         }
 
@@ -86,9 +91,12 @@ namespace GameTTS_GUI
             if (CanDownloadEspeak)
                 Task.Factory.StartNew(() =>
                 {
-                    downloads.Add("speakDL", Downloader.Download(Config.Get.Dependencies["espeak"],
-                        "espeakInstall.exe", ProgressEspeak));
-                }).ContinueWith(result => Downloader.Install("espeakInstall.exe", CheckDependencies));
+                    WebClient client = null;
+                    client = Downloader.Download(Config.Get.Dependencies["espeak"],
+                        "espeakInstall.exe", ProgressEspeak);
+                    downloads.Add("speakDL", client);
+                    client.DownloadFileCompleted += (s, a) => Downloader.QueueInstall("espeakInstall.exe", CheckDependencies);
+                });
         }
 
         private void OnDownloadDependencies(object sender, RoutedEventArgs e)
@@ -111,11 +119,11 @@ namespace GameTTS_GUI
 
         private void OnDownloadModel(object sender, RoutedEventArgs e)
         {
-            if (!CanDownloadEspeak)
+            if (CanDownloadModel)
                 Task.Factory.StartNew(() =>
                 {
                     downloads.Add("modelDL", Downloader.Download(Config.Get.Models[Config.Get.CurrentModel],
-                        @"GameTTS\vits\model\" + Config.Get.CurrentModel, ProgressModel));
+                        @"GameTTS\vits\model\" + Config.Get.CurrentModel, ProgressModel, true));
                 }).ContinueWith(result => CheckDependencies());
         }
 
@@ -128,15 +136,18 @@ namespace GameTTS_GUI
 
         private void OnCancel(object sender, RoutedEventArgs e)
         {
-            foreach(var client in downloads.Values)
-                client.CancelAsync();
+            if(downloads.Count > 0)
+                foreach(var client in downloads.Values)
+                    client.CancelAsync();
+            else
+                this.Close();
         }
 
         private void CheckDependencies()
         {
             Dispatcher.Invoke(delegate
             {
-                CanDownloadPython = !Dependencies.IsInstalled("python", "Python");
+                CanDownloadPython = !Dependencies.IsInstalled("python", "Python", 3);
                 CanDownloadEspeak = !Dependencies.IsInstalled("espeak", "speak text-to-speech:");
                 CanDownloadDependencies = !CanDownloadPython && !CanDownloadEspeak
                     && !Directory.Exists(@"GameTTS\.venv");
@@ -194,15 +205,6 @@ namespace GameTTS_GUI
 
                 ButtonOK.IsEnabled = !CanDownloadPython && !CanDownloadEspeak && !CanDownloadDependencies && !CanDownloadModel;
             });
-        }
-
-        private double GetDLProgress(DownloadProgressChangedEventArgs e)
-        {
-            double bytesIn = double.Parse(e.BytesReceived.ToString());
-            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
-            double percentage = bytesIn / totalBytes * 100;
-
-            return int.Parse(Math.Truncate(percentage).ToString());
         }
     }
 }
