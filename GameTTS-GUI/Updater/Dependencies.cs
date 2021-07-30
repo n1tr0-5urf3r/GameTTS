@@ -5,27 +5,53 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Newtonsoft.Json;
 
-namespace GameTTS_GUI
+namespace GameTTS_GUI.Updater
 {
     static class Dependencies
     {
         public static UpdateWindow WindowContext { get; set; }
 
-        private static Dictionary<string, InstallTask> toInstall = new Dictionary<string, InstallTask>();
-
         public static readonly CancellationTokenSource Cancellation = new CancellationTokenSource();
+        public static WebClient CurrentDownload { get; private set; }
+        public static GDriveDownloader CurrentGDriveDownload { get; private set; }
+
+        public static event Action<bool> OnConnectionCheck;
+        public static event Action OnUpdateFileLoaded;
+        public static event Action OnUpdateFinished;
+
+        public static Timer ConnectionChecker { get; private set; }
+
+        public static void GetUpdate()
+        {
+            //download json from server
+            string path = @"Resources/json/update.json";
+            var client = new WebClient();
+            client.DownloadFileCompleted += (sender, e) =>
+            {
+                Config.Get.Dependencies = JsonConvert.DeserializeObject<Dictionary<string, Dependency>>(
+                    File.ReadAllText(path));
+                OnUpdateFileLoaded();
+            };
+            Download(ref client, Config.Get.UpdateURL, path, null);
+        }
 
         public static void InstallAll(List<InstallTask> tasks)
         {
             Task.Factory.StartNew(() =>
             {
+                if (!Directory.Exists(@"GameTTS\tmp"))
+                    Directory.CreateDirectory(@"GameTTS\tmp");
+
                 foreach (var task in tasks)
                 {
                     if (!File.Exists(task.FilePath))
@@ -48,6 +74,7 @@ namespace GameTTS_GUI
                                         task.ProgressBar.Value = GetDLProgress(a);
                                     });
                                 };
+                                CurrentDownload = client;
                                 client.DownloadFileAsync(new Uri(task.URL), task.FilePath);
                             }
 
@@ -62,6 +89,8 @@ namespace GameTTS_GUI
                         WindowContext.Dispatcher.Invoke(delegate
                         {
                             task.ProgressBar.Value = 100;
+                            task.LoadingLabel.Text = "installiere...";
+                            task.LoadingLabel.Foreground = Brushes.Black;
                         });
                     }
 
@@ -69,7 +98,23 @@ namespace GameTTS_GUI
                     task.PreInstall?.Invoke();
                     if (task.FilePath.EndsWith(".ps1"))
                     {
+                        WindowContext.Dispatcher.Invoke(delegate
+                        {
+                            task.ProgressBar.IsIndeterminate = true;
+                        });
 
+                        ProcessStartInfo processInfo = new ProcessStartInfo()
+                        {
+                            FileName = "powershell.exe",
+                            Arguments = $"-NoProfile -ExecutionPolicy unrestricted \"{task.FilePath}\"",
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        };
+
+                        using (Process process = Process.Start(processInfo))
+                        {
+                            process.WaitForExit();
+                        }
                     }
                     else
                     {
@@ -85,28 +130,34 @@ namespace GameTTS_GUI
                     WindowContext.Dispatcher.Invoke(delegate
                     {
                         task.ProgressBar.Foreground = Brushes.Green;
+                        task.ProgressBar.IsIndeterminate = false;
                     });
                 }
-            });
+            }).ContinueWith(result => OnUpdateFinished());
         }
 
         public static void Download(ref WebClient client, string url, string filePath, ProgressBar progressBar)
         {
-            using (client = new WebClient())
+            using (client)
             {
-                client.DownloadProgressChanged += (s, a) =>
-                {
-                    WindowContext.Dispatcher.Invoke(delegate
+                if (progressBar != null)
+                    client.DownloadProgressChanged += (s, a) =>
                     {
-                        progressBar.Value = GetDLProgress(a);
-                    });
-                };
+                        WindowContext.Dispatcher.Invoke(delegate
+                        {
+                            progressBar.Value = GetDLProgress(a);
+                        });
+                    };
+
                 client.DownloadFileAsync(new Uri(url), filePath);
             }
         }
 
         public static void DownloadGDrive(ref GDriveDownloader gdl, string url, string filePath, ProgressBar progressBar)
         {
+            if (!Directory.Exists(@"GameTTS\tmp"))
+                Directory.CreateDirectory(@"GameTTS\tmp");
+
             using (gdl = new GDriveDownloader())
             {
                 gdl.DownloadProgressChanged += (s, progress) =>
@@ -116,41 +167,32 @@ namespace GameTTS_GUI
                         progressBar.Value = progress.ProgressPercentage;
                     });
                 };
+                CurrentGDriveDownload = gdl;
                 gdl.DownloadFileAsync(url, filePath);
             }
         }
 
-        public static void Install(string path, Action preInstall = null, Action postInstall = null)
+        public static void RunConnectionWatcher(long checkIntervalMillis)
         {
-            Task.Factory.StartNew(() =>
+            if (ConnectionChecker != null)
+                return;
+
+            ConnectionChecker = new Timer((a) =>
             {
-                foreach (var task in toInstall.Values)
-                {
-                    preInstall?.Invoke();
-                    using (Process process = Process.Start(new ProcessStartInfo(path)))
-                    {
-                        process.WaitForExit();
-                    }
-                    postInstall?.Invoke();
-                }
-            });
+                OnConnectionCheck(CheckConnection());
+            }, null, 0, checkIntervalMillis);
         }
 
-        public static string GetVersion(string execName, string versionPrefix)
+        public static Version GetVersion(string execName)
         {
             string output = GetProgramVersionOutput(execName);
 
-            output = output.Replace(versionPrefix, "").TrimStart(' ');
-
-            if (output.Contains(" "))
-                output = output.Substring(0, output.IndexOf(' '));
-
-            return output;
+            return ExtractVersion(output);
         }
 
-        public static bool IsInstalled(string execName, string versionPrefix, int? major = null, int? minor = null)
+        public static bool IsInstalled(Dependency dep)
         {
-            string output = GetProgramVersionOutput(execName);
+            string output = GetProgramVersionOutput(dep.Name);
 
             if (output == null)
                 return false;
@@ -159,19 +201,22 @@ namespace GameTTS_GUI
             if (output.Contains("was not found"))
                 return false;
 
-            var version = Version.Parse(GetVersion(execName, versionPrefix));
+            var version = ExtractVersion(output);
 
-            if (output.Contains(versionPrefix))
-            {
-                if (major != null)
-                    if (version.Major < major.Value)
-                        return false;
+            if (version.Major < dep.Version.Major)
+                return false;
 
-                if (minor != null)
-                    if (version.Minor < minor.Value)
-                        return false;
-            }
-            else
+            if (version.Minor < dep.Version.Minor)
+                return false;
+
+            return true;
+        }
+
+        public static bool IsInstalled(string key)
+        {
+            var dep = Config.Get.Dependencies[key];
+
+            if (Config.Get.FileVersions[key] < dep.Version.Major)
                 return false;
 
             return true;
@@ -211,6 +256,15 @@ namespace GameTTS_GUI
             return output;
         }
 
+        public static Version ExtractVersion(string versionString)
+        {
+            Regex pattern = new Regex(@"\d+(\.\d+)+");
+            Match m = pattern.Match(versionString);
+            string version = m.Value;
+
+            return new Version(m.Value);
+        }
+
         public static double GetDLProgress(DownloadProgressChangedEventArgs e)
         {
             double bytesIn = double.Parse(e.BytesReceived.ToString());
@@ -218,6 +272,30 @@ namespace GameTTS_GUI
             double percentage = bytesIn / totalBytes * 100;
 
             return int.Parse(Math.Truncate(percentage).ToString());
+        }
+
+        /// <summary>
+        /// Sends a ping to Google to check internet connectin. Returns true if ping was successful.
+        /// </summary>
+        /// <returns></returns>
+        public static bool CheckConnection()
+        {
+            Ping myPing = new Ping();
+            string host = "google.com";
+            byte[] buffer = new byte[32];
+            int timeout = 2000;
+            PingOptions pingOptions = new PingOptions();
+
+            try
+            {
+                PingReply reply = myPing.Send(host, timeout, buffer, pingOptions);
+
+                if (reply.Status == IPStatus.Success)
+                    return true;
+            }
+            catch (PingException) { }
+
+            return false;
         }
 
         public class InstallTask

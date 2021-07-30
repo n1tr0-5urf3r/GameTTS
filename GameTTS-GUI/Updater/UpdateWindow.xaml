@@ -1,0 +1,40 @@
+﻿<Window x:Class="GameTTS_GUI.Updater.UpdateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameTTS_GUI.Updater"
+        mc:Ignorable="d"
+        Title="Updates und Abhängigkeiten" WindowStartupLocation="CenterScreen" Height="293.644" Width="452.062">
+    <StackPanel Orientation="Vertical" Margin="8">
+        <DockPanel>
+            <Label FontSize="16">Python 3.x:</Label>
+            <TextBlock x:Name="TBPythonVersion" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
+        </DockPanel>
+        <DockPanel>
+            <ProgressBar x:Name="ProgressPython" IsEnabled="{Binding CanDownloadPython}" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0"></ProgressBar>
+        </DockPanel>
+
+        <DockPanel>
+            <Label FontSize="16">Python Abhängigkeiten:</Label>
+            <TextBlock x:Name="TBDependencies" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14">prüfe...</TextBlock>
+        </DockPanel>
+        <DockPanel>
+            <ProgressBar x:Name="ProgressPyDependencies" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0"></ProgressBar>
+        </DockPanel>
+
+        <DockPanel>
+            <Label FontSize="16">Sprachmodell:</Label>
+            <TextBlock x:Name="TBModel" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14">prüfe...</TextBlock>
+        </DockPanel>
+        <DockPanel>
+            <ProgressBar x:Name="ProgressModel" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0"></ProgressBar>
+        </DockPanel>
+        <Separator Height="32" Margin="0"/>
+        <DockPanel>
+            <Button Content="Abbrechen" Click="OnCancel" DockPanel.Dock="Right"></Button>
+            <Button x:Name="ButtonOK" Content="OK" Click="OnConfirm" Margin="8,0" Width="64" DockPanel.Dock="Right" IsEnabled="False"></Button>
+            <TextBlock x:Name="TBStatus" HorizontalAlignment="Left" FontSize="14">prüfe Internetverbindung...</TextBlock>
+        </DockPanel>
+    </StackPanel>
+</Window>

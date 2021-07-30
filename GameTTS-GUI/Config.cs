@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GameTTS_GUI.Updater;
 using Newtonsoft.Json;
 
 namespace GameTTS_GUI
@@ -17,12 +18,14 @@ namespace GameTTS_GUI
         public string OutputPath { get; set; }
         public string CsvPathstring { get; set; }
         public string OutputFormat { get; set; } = "WAV";
-        public string CurrentModel { get; set; } = "G_700000.pth";
+        public int ModelVersion { get; set; }
+        public string UpdateURL { get; set; }
+        public int InstallScriptVersion { get; set; }
 
         [JsonIgnore]
-        public Dictionary<string, string> Models { get; private set; }
+        public Dictionary<string, int> FileVersions { get; private set; }
         [JsonIgnore]
-        public Dictionary<string, string> Dependencies { get; private set; }
+        public Dictionary<string, Dependency> Dependencies { get; set; }
 
         //get singelton
         [JsonIgnore]
@@ -39,8 +42,11 @@ namespace GameTTS_GUI
                 else
                     _instance = new Config();
 
-            _instance.Models = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(@"Resources\json\model-urls.json"));
-            _instance.Dependencies = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(@"Resources\json\dependency-urls.json"));
+            _instance.FileVersions = new Dictionary<string, int> 
+            { 
+                { "pyDependencies", _instance.InstallScriptVersion }, 
+                { "model", _instance.ModelVersion } 
+            };
         }
 
         public static void Save() => File.WriteAllText("appConfig.json", JsonConvert.SerializeObject(_instance));

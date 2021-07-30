@@ -1,0 +1,20 @@
+﻿{
+  "python": {
+    "Name": "python",
+    "VersionMajor": 3,
+    "VersionMinor": 0,
+    "URL": "https://www.python.org/ftp/python/3.9.6/python-3.9.6-amd64.exe"
+  },
+  "pyDependencies": {
+    "Name": "install.ps1",
+    "VersionMajor": 1,
+    "VersionMinor": 0,
+    "URL": "https://placeholder.gdrive/install.ps1"
+  },
+  "model": {
+    "Name": "G_700000.pth",
+    "VersionMajor": 7,
+    "VersionMinor": 0,
+    "URL": "https://drive.google.com/uc?id=1tq61uJ0raivrFPgaZ19Js-isqmCHxwHg"
+  }
+}
