@@ -1,0 +1,9 @@
+pydub
+pysbd
+numpy
+scipy
+librosa
+unidecode
+gruut
+gruut[de]
+torch
