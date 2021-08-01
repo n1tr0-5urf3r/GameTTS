@@ -1,10 +1,9 @@
-eel
-pysbd
 pydub
-gdown
+pysbd
 numpy
 scipy
 librosa
 unidecode
-phonemizer
+gruut
+gruut[de]
 torch
