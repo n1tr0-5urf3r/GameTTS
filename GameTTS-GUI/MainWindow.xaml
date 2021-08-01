@@ -51,8 +51,8 @@
                     <DockPanel>
                         <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,8">
-                                <Button Content=" Alle exportieren " Background="Green" Foreground="White" Click="ExportAll" Margin="0,0,8,0" ToolTip="Alle Zeilen aus der Liste exportieren." HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <Button Content="Alle löschen" Background="Red" Foreground="White" Click="ClearList" ToolTip="Die Liste leeren." HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Button Content=" Alle exportieren " Background="#009624" Foreground="White" Click="ExportAll" Margin="0,0,8,0" Padding="2,2,2,2" ToolTip="Alle Zeilen aus der Liste exportieren." HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Button Content="Alle löschen" Background="#b61827" Foreground="White" Click="ClearList" Padding="2,2,2,2" ToolTip="Die Liste leeren." HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </StackPanel>
                             <ProgressBar x:Name="ExportProgressBar" Value="50" Height="16" Margin="0,0,0,8"></ProgressBar>
                         </StackPanel>
