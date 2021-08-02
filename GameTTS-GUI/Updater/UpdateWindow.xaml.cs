@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Newtonsoft.Json;
-using static GameTTS_GUI.Updater.Dependencies;
+using static GameTTS_GUI.Updater.DependencyManager;
 
 namespace GameTTS_GUI.Updater
 {
@@ -28,27 +29,9 @@ namespace GameTTS_GUI.Updater
     {
         #region -- UI data bindings
 
-        //progress bar python
-        public double PyProgress;
-        public SolidColorBrush PyProgressColor;
-
-        //progress bar model download
-        public double ModelProgress;
-        public SolidColorBrush ModelProgressColor;
-
-        //progress bar ps script installer
+        public bool CanContinue { get; set; } = true;
 
         #endregion
-        public bool CanDownloadPython { get; private set; }
-        public bool CanDownloadDependencies { get; private set; }
-        public bool CanDownloadModel { get; private set; }
-
-        private bool updating;
-        private bool modelDownloaded;
-        private bool canProceed;
-
-        private Dictionary<string, WebClient> downloads = new Dictionary<string, WebClient>();
-        private List<InstallTask> installs = new List<InstallTask>();
 
         public UpdateWindow()
         {
@@ -65,37 +48,31 @@ namespace GameTTS_GUI.Updater
         private void OnStartup(object sender, EventArgs e)
         {
             //window context for cross-thread UI update
-            Dependencies.WindowContext = this;
+            DependencyManager.WindowContext = this;
 
-            Dependencies.OnConnectionCheck += (hasConnection) =>
+            Connection.OnChecked += (status) =>
             {
-                Dispatcher.Invoke(() =>
-                {
-                    if (hasConnection)
-                    {
-                        TBStatus.Text = "[.] verbunden";
-                        TBStatus.Foreground = Brushes.Green;
-                    }
-                    else
-                    {
-                        TBStatus.Text = "[ ] nicht verbunden";
-                        TBStatus.Foreground = Brushes.Red;
-                        return;
-                    }
-                });
+                Dispatcher.Invoke(() => UpdateConnectionStatus(status));
+
+                if(status == ConnectionStatus.ConnectionReestablished)
+                    CheckDependencies();
             };
 
-            Dependencies.OnUpdateFileLoaded += CheckDependencies;
-            Dependencies.OnUpdateFinished += () =>
+            DependencyManager.OnUpdateFileLoaded += () =>
             {
-                if (ButtonOK.IsEnabled)
+                CheckDependencies();
+            };
+
+            DependencyManager.OnUpdateFinished += () =>
+            {
+                if (CanContinue)
                     OnConfirm(null, null);
             };
 
-            if (Dependencies.CheckConnection())
-                Dependencies.GetUpdate();
+            if (Connection.CheckConnection() == ConnectionStatus.Connected)
+                DependencyManager.GetUpdate();
 
-            Dependencies.RunConnectionWatcher(5000);
+            Connection.RunWatcher(5000);
         }
 
         private void OnConfirm(object sender, RoutedEventArgs e)
@@ -103,90 +80,134 @@ namespace GameTTS_GUI.Updater
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
-            canProceed = true;
             Close();
         }
 
-        private void StartUpdate()
+        public void UpdateConnectionStatus(ConnectionStatus status)
         {
-            if (updating)
-                return;
-
-            updating = true;
-            installs.Clear();
-            DownloadModel();
-            QueuePython();
-            QueueDependencies();
-            Dependencies.OnUpdateFinished += () =>
+            switch (status)
             {
-                updating = false;
-                CheckDependencies();
-            };
-
-            Dependencies.InstallAll(installs);
+                case ConnectionStatus.Connected:
+                case ConnectionStatus.ConnectionReestablished:
+                    TBStatus.Text = "[.] verbunden";
+                    TBStatus.Foreground = Brushes.Green;
+                    break;
+                case ConnectionStatus.Disconnected:
+                case ConnectionStatus.ConnectionLost:
+                    TBStatus.Text = "[ ] nicht verbunden";
+                    TBStatus.Foreground = Brushes.Red;
+                    break;
+            }
         }
 
         private void QueuePython()
         {
-            if (CanDownloadPython)
+            if (!DependencyManager.IsPythonInstalled)
             {
-                installs.Add(new InstallTask
+                DependencyManager.QueueInstall("python", new InstallTask
                 {
                     URL = Config.Get.Dependencies["python"].URL,
-                    FilePath = @"GameTTS\tmp\pythonInstall.exe",
+                    FilePath = Config.TempPath + "pythonInstall.exe",
                     ProgressBar = ProgressPython,
-                    LoadingLabel = TBPythonVersion,
+                    ProgressText = TBPythonVersion,
                     PreInstall = () =>
                         MessageBox.Show("Bitte beachten: Bei der Installation das Häkchen bei 'Add Python to PATH' setzen!",
                             "Hinweis", MessageBoxButton.OK, MessageBoxImage.Information),
-                    PostInstall = () => VerifyInstallation("python")
+                    PostInstall = () =>
+                    {
+                        if (!IsPythonInstalled)
+                        {
+                            var result = MessageBox.Show("Installation fehlgeschlagen oder abgebrochen. Erneut versuchen?",
+                                "Fehler", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                            if (result == MessageBoxResult.Yes)
+                            {
+                                Dispatcher.Invoke(delegate
+                                {
+                                    ProgressPython.Value = 0;
+                                    CheckDependencies();
+                                });
+                                return false;
+                            }
+                            else
+                            {
+                                Dispatcher.Invoke(delegate
+                                {
+                                    Close();
+                                });
+                                return false;
+                            }
+                        }
+
+                        CheckDependencies();
+                        return true;
+                    }
                 });
             }
         }
 
         private void QueueDependencies()
         {
-            if(CanDownloadDependencies)
+            if(!DependencyManager.IsPyDepInstalled)
             {
-                installs.Add(new InstallTask
+                DependencyManager.QueueInstall("pyDependencies", new InstallTask
                 {
                     //URL = Config.Get.Dependencies["pyDependencies"], //need url later
-                    FilePath = Environment.CurrentDirectory + @"\GameTTS\install.ps1",
+                    FilePath = @"GameTTS/install.ps1",
+                    TargetDirectory = Config.VirtualEnvPath,
                     ProgressBar = ProgressPyDependencies,
-                    LoadingLabel = TBDependencies,
-                    PostInstall = () => 
-                    { 
-                        CheckDependencies();
+                    ProgressText = TBDependencies,
+                    PostInstall = () =>
+                    {
                         Config.Get.InstallScriptVersion = Config.Get.Dependencies["pyDependencies"].Version.Major;
                         Config.Save();
-                        return true; }
+                        CheckDependencies();
+                        return true;
+                    }
                 });
             }
         }
 
         private void DownloadModel()
         {
-            if (CanDownloadModel)
+            if (!DependencyManager.IsModelInstalled)
             {
-                string modelPath = @"GameTTS\tmp\" + Config.Get.Dependencies["model"].Name;
-                GDriveDownloader gdl = null;
+                string tempModelPath = Config.TempPath + Config.Get.Dependencies["model"].Name;
+
                 TBModel.Text = "lade...";
                 TBModel.Foreground = Brushes.Black;
-                Dependencies.DownloadGDrive(ref gdl, Config.Get.Dependencies["model"].URL,
-                    modelPath, ProgressModel);
-                downloads.Add("modelDL", gdl.Client);
-                gdl.DownloadFileCompleted += (s, a) =>
+
+                DependencyManager.DownloadGDrive(new InstallTask
                 {
-                    if (File.Exists(modelPath))
+                    FilePath = tempModelPath,
+                    URL = Config.Get.Dependencies["model"].URL,
+                    ProgressBar = ProgressModel,
+                    ProgressText = TBModel,
+                    PostInstall = () =>
                     {
-                        File.Move(modelPath, @"GameTTS\vits\model\" + Config.Get.Dependencies["model"].Name);
-                        modelDownloaded = true;
-                        ProgressModel.Foreground = Brushes.Green;
-                        Config.Get.ModelVersion = Config.Get.Dependencies["model"].Version.Major;
-                        Config.Save();
-                        CheckDependencies();
+                        if (File.Exists(tempModelPath))
+                        {
+                            try
+                            {
+                                if (DependencyManager.CheckIntegrity(tempModelPath, Config.Get.Dependencies["model"].Checksum))
+                                {
+                                    string dest = Config.ModelPath + Config.Get.Dependencies["model"].Name;
+                                    if (File.Exists(dest))
+                                        File.Delete(dest);
+
+                                    File.Move(tempModelPath, dest);
+                                    Dispatcher.Invoke(() => { ProgressModel.Foreground = Brushes.Green; });
+                                    Config.Get.ModelVersion = Config.Get.Dependencies["model"].Version.Major;
+                                    Config.Save();
+                                    CheckDependencies();
+                                }
+                            }
+                            catch (Exception) { }
+                        }
+
+                        return false;
                     }
-                };
+                });
             }
         }
 
@@ -194,7 +215,7 @@ namespace GameTTS_GUI.Updater
 
         private void CloseRequest(object sender, CancelEventArgs e)
         {
-            if (!canProceed)
+            if (!CanContinue)
             {
                 var result = MessageBox.Show("Setup/Update wirklich abbrechen?",
                                     "Hinweis", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -204,108 +225,65 @@ namespace GameTTS_GUI.Updater
                     e.Cancel = true;
                     return;
                 }
-            
-                if (Dependencies.CurrentDownload != null)
-                    Dependencies.CurrentDownload.CancelAsync();
-                if (Dependencies.CurrentGDriveDownload != null)
-                    Dependencies.CurrentGDriveDownload.Client.CancelAsync();
+
+                DependencyManager.CancelDownloads();
             }
         }
 
         private void CheckDependencies()
         {
-            bool needsUpdate = false;
-            var py = Config.Get.Dependencies["python"];
-            var pyDeps = Config.Get.Dependencies["pyDependencies"];
-            var model = Config.Get.Dependencies["model"];
-
-            CanDownloadPython = !Dependencies.IsInstalled(py);
-            CanDownloadDependencies = !Directory.Exists(@"GameTTS\.venv") 
-                && !Dependencies.IsInstalled("pyDependencies");
-            CanDownloadModel = !File.Exists(@"GameTTS\vits\model\" + Config.Get.Dependencies["model"].Name)
-                && !Dependencies.IsInstalled("model");
-
             Dispatcher.Invoke(delegate
             {
-                if (!CanDownloadPython)
+                if (DependencyManager.IsPythonInstalled)
                 {
-                    TBPythonVersion.Text = Dependencies.GetVersion("python").ToString();
+                    TBPythonVersion.Text = DependencyManager.GetVersion("python").ToString();
                     TBPythonVersion.Foreground = Brushes.Green;
+                    ProgressPython.Foreground = Brushes.Green;
+                    ProgressPython.Value = 100;
                 }
                 else
                 {
                     TBPythonVersion.Text = "nicht installiert";
                     TBPythonVersion.Foreground = Brushes.Red;
-                    needsUpdate = true;
+                    QueuePython();
+                    CanContinue = false;
                 }
 
-                if (Directory.Exists(@"GameTTS\.venv"))
+                if (DependencyManager.IsPyDepInstalled)
                 {
                     TBDependencies.Text = "installiert";
                     TBDependencies.Foreground = Brushes.Green;
+                    ProgressPyDependencies.Foreground = Brushes.Green;
+                    ProgressPyDependencies.Value = 100;
                 }
                 else
                 {
                     TBDependencies.Text = "nicht installiert";
                     TBDependencies.Foreground = Brushes.Red;
-                    needsUpdate = true;
+                    QueueDependencies();
+                    CanContinue = false;
                 }
 
-                if (!CanDownloadModel)
+                if (DependencyManager.IsModelInstalled)
                 {
                     TBModel.Text = Config.Get.Dependencies["model"].Name;
                     TBModel.Foreground = Brushes.Green;
+                    ProgressModel.Foreground = Brushes.Green;
+                    ProgressModel.Value = 100;
                 }
                 else
                 {
                     TBModel.Text = "nicht installiert";
                     TBModel.Foreground = Brushes.Red;
-                    needsUpdate = true;
+                    DownloadModel();
+                    CanContinue = false;
                 }
-
-                if (needsUpdate)
-                {
-                    StartUpdate();
-                    return;
-                }
-
-                ButtonOK.IsEnabled = !CanDownloadPython && !CanDownloadDependencies && !CanDownloadModel;
-            });
-        }
-
-        private bool VerifyInstallation(string key)
-        {
-            if (!Dependencies.IsInstalled(Config.Get.Dependencies[key]))
-            {
-                var result = MessageBox.Show("Installation fehlgeschlagen oder abgebrochen. Erneut versuchen?",
-                    "Fehler", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    Dispatcher.Invoke(delegate
-                    {
-                        ProgressPython.Value = 0;
-                        updating = false;
-                        StartUpdate();
-                    });
-                    return false;
-                }
-                else if (result == MessageBoxResult.No)
-                {
-                    Dispatcher.Invoke(delegate
-                    {
-                        Close();
-                    });
-                    return false;
-                }
-            }
-
-            Dispatcher.Invoke(delegate
-            {
-                CheckDependencies();
             });
 
-            return true;
+            CanContinue = DependencyManager.IsPythonInstalled && DependencyManager.IsPyDepInstalled && DependencyManager.IsModelInstalled;
+
+            if(!CanContinue)
+                DependencyManager.InstallAll();
         }
     }
 }

@@ -25,50 +25,21 @@ namespace GameTTS_GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private List<VoiceLine> listSource = new List<VoiceLine>();
-        Dictionary<string, Dictionary<string, int>> VoiceMapping;
-        System.Media.SoundPlayer Player = new System.Media.SoundPlayer();
-
-        string[] games;
-        List<string>[] voiceSources;
-
-        LineSettings settings = new LineSettings();
+        private MainData data;
 
         public MainWindow()
         {
             InitializeComponent();
-            this.Closing += (sender, e) =>
-            {
-                if(Directory.Exists("tmp"))
-                {
-                    string[] files = Directory.GetFiles("tmp", "*");
-                    foreach (var file in files)
-                        File.Delete(file);
-                    Directory.Delete("tmp");
-                }
-            };
 
+            data = new MainData();
 
-            //load json voice mapping
-            VoiceMapping = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, int>>>
-                (File.ReadAllText(@"/Resources/json/game-speaker.json"));
-
-            games = VoiceMapping.Keys.ToArray();
-            voiceSources = new List<string>[games.Length];
-            int i = 0;
-            foreach(var key in VoiceMapping.Keys)
-            {
-                voiceSources[i] = VoiceMapping[key].Keys.ToList();
-                ++i;
-            }
-
-            CBGame.ItemsSource = games;
-            FileList.ItemsSource = listSource;
-            CBVoice.ItemsSource = voiceSources[0];
+            CBGame.ItemsSource = data.GameList;
+            FileList.ItemsSource = data.OutputListData;
+            CBVoice.ItemsSource = data.VoiceLists[0];
 
             CBGame.SelectionChanged += (sender, e) =>
             {
-                CBVoice.ItemsSource = voiceSources[(sender as ComboBox).SelectedIndex];
+                CBVoice.ItemsSource = data.VoiceLists[(sender as ComboBox).SelectedIndex];
                 CBVoice.SelectedIndex = 0;
             };
 
@@ -81,11 +52,11 @@ namespace GameTTS_GUI
         {
             var line = new VoiceLine { Game = CBGame.Text, Voice = CBVoice.Text, Text = LineText.Text };
             
-            if (!Directory.Exists("tmp"))
-                Directory.CreateDirectory("tmp");
+            if (!Directory.Exists(Config.TempPath))
+                Directory.CreateDirectory(Config.TempPath);
 
             //ps script/python args
-            string args = $"'{LineText.Text}' {VoiceMapping[CBGame.Text][CBVoice.Text]} '{CBVoice.Text}' 0.58 0.8 1";
+            string args = $"'{LineText.Text}' {data.VoiceMapping[CBGame.Text][CBVoice.Text]} '{CBVoice.Text}' 0.58 0.8 1";
                 //py        exec file           text to speak      speaker ID/name  file content?   variation a/b  speed  path    extension
                 //"python     .\\main.py   'Es funktioniert tatsächlich'    1 'Ash'           false           0.58 0.8    1   false   wav";
                 //"'Hallo, ich bin Ash.' 1 Ash 0.58 0.8 1";
@@ -125,7 +96,7 @@ namespace GameTTS_GUI
             string tempFile = "tmp/" + fileName + ".wav";
             line.Path = tempFile;
 
-            listSource.Add(line);
+            data.OutputListData.Add(line);
             FileList.Items.Refresh();
         }
 
@@ -134,7 +105,7 @@ namespace GameTTS_GUI
             if (e.Key == Key.Delete || e.Key == Key.Back)
                 if(FileList.SelectedIndex >= 0)
                 {
-                    listSource.RemoveAt(FileList.SelectedIndex);
+                    data.OutputListData.RemoveAt(FileList.SelectedIndex);
                     FileList.Items.Refresh();
                 }
         }
@@ -167,13 +138,13 @@ namespace GameTTS_GUI
 
             string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
                         + @"/Resources/VoiceSamples/" + index.ToString() + ".wav";
-            Player.SoundLocation = path;
-            Player.Play();
+            data.Player.SoundLocation = path;
+            data.Player.Play();
         }
 
         private void OnSettings(object sender, RoutedEventArgs e)
         {
-            LineSettingsWindow window = new LineSettingsWindow(settings);
+            LineSettingsWindow window = new LineSettingsWindow(data.Settings);
             window.Owner = this;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             window.ShowDialog();
@@ -193,7 +164,7 @@ namespace GameTTS_GUI
             if (!path.EndsWith("\\"))
                 path += "\\";
                   
-            foreach(var item in listSource)
+            foreach(var item in data.OutputListData)
             {
                 int index = GetVoiceIndex(item.Game, item.Voice);
                 FileInfo info = new FileInfo(item.Path);
@@ -209,11 +180,11 @@ namespace GameTTS_GUI
 
         private void ClearList(object sender, RoutedEventArgs e)
         {
-            listSource.Clear();
+            data.OutputListData.Clear();
             FileList.Items.Refresh();
         }
 
-        private int GetVoiceIndex(string game, string voice) => VoiceMapping[game][voice];
+        private int GetVoiceIndex(string game, string voice) => data.VoiceMapping[game][voice];
 
         private void ShowFileNameBox(object sender, RoutedEventArgs e) => FileNamePanel.Visibility = Visibility.Visible;
 

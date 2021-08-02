@@ -19,13 +19,12 @@ namespace GameTTS_GUI
             //remove unfinshed (or finished) downloads
             try
             {
-                string tmpDir = @"GameTTS\tmp";
-                if (Directory.Exists(tmpDir))
+                if (Directory.Exists(Config.TempPath))
                 {
-                    var files = Directory.GetFiles(tmpDir);
+                    var files = Directory.GetFiles(Config.TempPath);
                     foreach (var file in files)
                         File.Delete(file);
-                    Directory.Delete(tmpDir);
+                    Directory.Delete(Config.TempPath);
                 }
             }
             catch { }

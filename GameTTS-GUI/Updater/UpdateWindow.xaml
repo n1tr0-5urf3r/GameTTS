@@ -9,10 +9,10 @@
     <StackPanel Orientation="Vertical" Margin="8">
         <DockPanel>
             <Label FontSize="16">Python 3.x:</Label>
-            <TextBlock x:Name="TBPythonVersion" VerticalAlignment="Center" HorizontalAlignment="Right">prüfe...</TextBlock>
+            <TextBlock x:Name="TBPythonVersion" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14">prüfe...</TextBlock>
         </DockPanel>
         <DockPanel>
-            <ProgressBar x:Name="ProgressPython" IsEnabled="{Binding CanDownloadPython}" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0"></ProgressBar>
+            <ProgressBar x:Name="ProgressPython" Foreground="DeepSkyBlue" VerticalAlignment="Center" Height="24" Margin="0"></ProgressBar>
         </DockPanel>
 
         <DockPanel>
@@ -33,8 +33,8 @@
         <Separator Height="32" Margin="0"/>
         <DockPanel>
             <Button Content="Abbrechen" Click="OnCancel" DockPanel.Dock="Right"></Button>
-            <Button x:Name="ButtonOK" Content="OK" Click="OnConfirm" Margin="8,0" Width="64" DockPanel.Dock="Right" IsEnabled="False"></Button>
-            <TextBlock x:Name="TBStatus" HorizontalAlignment="Left" FontSize="14">prüfe Internetverbindung...</TextBlock>
+            <Button x:Name="ButtonOK" Content="OK" Click="OnConfirm" IsEnabled="{Binding CanContinue}" Margin="8,0" Width="64" DockPanel.Dock="Right"></Button>
+            <TextBlock x:Name="TBStatus" HorizontalAlignment="Left" FontFamily="Courier New" FontSize="14">prüfe Internetverbindung...</TextBlock>
         </DockPanel>
     </StackPanel>
 </Window>

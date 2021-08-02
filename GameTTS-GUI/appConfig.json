@@ -1,8 +1,9 @@
 ﻿{
   "ConfigVersion": 1,
   "OutputPath": "",
-  "CsvPath": "",
+  "CsvPathstring": null,
   "OutputFormat": "WAV",
-  "CurrentModel": "G_700000.pth",
-  "UpdateURL": "https://drive.google.com/uc?export=download&id=17zE74Co2TVbPUaSkKoelLGogkWg0if4x"
+  "ModelVersion": 6,
+  "UpdateURL": "https://drive.google.com/uc?export=download&id=17zE74Co2TVbPUaSkKoelLGogkWg0if4x",
+  "InstallScriptVersion": 0
 }

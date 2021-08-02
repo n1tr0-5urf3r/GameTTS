@@ -17,5 +17,6 @@ namespace GameTTS_GUI.Updater
         public string URL { get; set; }
         [JsonIgnore]
         public Version Version { get => new Version(versionMajor, versionMinor); }
+        public string Checksum { get; set; }
     }
 }
