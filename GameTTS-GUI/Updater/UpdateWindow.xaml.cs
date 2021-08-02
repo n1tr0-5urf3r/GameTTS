@@ -26,6 +26,19 @@ namespace GameTTS_GUI.Updater
     /// </summary>
     public partial class UpdateWindow : Window
     {
+        #region -- UI data bindings
+
+        //progress bar python
+        public double PyProgress;
+        public SolidColorBrush PyProgressColor;
+
+        //progress bar model download
+        public double ModelProgress;
+        public SolidColorBrush ModelProgressColor;
+
+        //progress bar ps script installer
+
+        #endregion
         public bool CanDownloadPython { get; private set; }
         public bool CanDownloadDependencies { get; private set; }
         public bool CanDownloadModel { get; private set; }
