@@ -24,8 +24,8 @@
             </DockPanel>
             <Slider x:Name="SLVarB" Value="{Binding VarianceB}" Minimum="0" Maximum="1" TickFrequency="0.1" TickPlacement="TopLeft" IsSnapToTickEnabled="True"></Slider>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                <Button Content="Zurücksetzen" Click="OnReset" Margin="0,0,8,0" Background="#FFFF5555"/>
-                <Button Content="OK" Click="OnApply" MinWidth="56" Background="#FF57FF3C"/>
+                <Button Content="Zurücksetzen" Click="OnReset" Margin="0,0,8,0" Padding="2, 2, 2, 2" Background="#ff5252"/>
+                <Button Content="OK" Click="OnApply" MinWidth="56" Padding="2, 2, 2, 2" Background="#00c853"/>
             </StackPanel>
         </StackPanel>
     </GroupBox>

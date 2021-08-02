@@ -1,12 +1,16 @@
 """ from https://github.com/keithito/tacotron """
 
-"""
+'''
 Defines the set of symbols used in text input to the model.
-"""
-_pad = "_"
+'''
+_pad        = '_'
 _punctuation = ';:,.!?¡¿—…"«»“” '
-_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÜÖÄabcdefghijklmnopqrstuvwxyzüöäß"
-_letters_ipa = "iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒᵻʘɓǀɗǃʄǂɠǁʛpbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟˈˌːˑʍwɥʜʢʡɕʑɺɧʲɚ˞ɫ̩̃"
+_letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÜÖÄabcdefghijklmnopqrstuvwxyzüöäß'
+#_letters_ipa = "ɑɐɒæɓʙβɔɕçɗɖðʤəɘɚɛɜɝɞɟʄɡɠɢʛɦɧħɥʜɨɪʝɭɬɫɮʟɱɯɰŋɳɲɴøɵɸθœɶʘɹɺɾɻʀʁɽʂʃʈʧʉʊʋⱱʌɣɤʍχʎʏʑʐʒʔʡʕʢǀǁǂǃˈˌːˑʼʴʰʱʲʷˠˤ˞↓↑→↗↘'̩'ᵻ"
+#_letters_ipa = "iyɨʉɯuɪʏʊeøɘəɵɤoɛœɜɞʌɔæɐaɶɑɒᵻʘɓǀɗǃʄǂɠǁʛpbtdʈɖcɟkɡqɢʔɴŋɲɳnɱmʙrʀⱱɾɽɸβfvθðszʃʒʂʐçʝxɣχʁħʕhɦɬɮʋɹɻjɰlɭʎʟˈˌːˑʍwɥʜʢʡɕʑɺɧʲɚ˞ɫ̩̃"
+
+_letters_ipa = "ɰqɲɸˈʲǀʊxʡmlɹˑhœʍɪɽæɤʀɡiǁɬ˞ħefʢɕǂøɻɢɵɠʂ͡yʔːbɛjʜɚɘʌdɨrɭɗɒɦχɔɾuʕɫɖð̯ɜɧɯpɳɐʐvaɥɑʘɞʉɓzɣãⱱʋtʎnβɺ̩ʃkʑᵻʁǃɮɱəõɟoʛˌʈŋ̃csʙɴθʟʄʝwçɶʏʒ"
+#_letters_ipa = "ãçõøŋœɐɔəɛɡɪʁʃʊʏʒʔː̯̃͡χ"
 
 # Export all symbols:
 symbols = [_pad] + list(_punctuation) + list(_letters) + list(_letters_ipa)
