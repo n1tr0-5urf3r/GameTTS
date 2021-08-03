@@ -1,23 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Newtonsoft.Json;
 using static GameTTS_GUI.Updater.DependencyManager;
 
 namespace GameTTS_GUI.Updater
@@ -27,11 +12,10 @@ namespace GameTTS_GUI.Updater
     /// </summary>
     public partial class UpdateWindow : Window
     {
-        #region -- UI data bindings
-
+        /// <summary>
+        /// Binding for OK button enabled status
+        /// </summary>
         public bool CanContinue { get; set; } = true;
-
-        #endregion
 
         public UpdateWindow()
         {
@@ -43,13 +27,16 @@ namespace GameTTS_GUI.Updater
             Closing += CloseRequest;
         }
 
-        //XAML parser would spit out weird errors if this would be called during 
-        //window construction, so we'll have to do it after the first rendering
+        /// <summary>
+        /// XAML parser would spit out weird errors if this would be called during 
+        /// window construction, so we'll have to do start up logic after the first rendering.
+        /// </summary>
         private void OnStartup(object sender, EventArgs e)
         {
-            //window context for cross-thread UI update
-            DependencyManager.WindowContext = this;
+            //for cross-thread UI update
+            DependencyManager.WindowDispatcher = Dispatcher;
 
+            //set connection status change handling
             Connection.OnChecked += (status) =>
             {
                 Dispatcher.Invoke(() => UpdateConnectionStatus(status));
@@ -61,20 +48,31 @@ namespace GameTTS_GUI.Updater
             DependencyManager.OnUpdateFileLoaded += () =>
             {
                 CheckDependencies();
+                if (CanContinue)
+                    OnConfirm(null, null);
             };
 
+            //automatically close the window and get to the main app
             DependencyManager.OnUpdateFinished += () =>
             {
                 if (CanContinue)
                     OnConfirm(null, null);
             };
 
+            //run a connection check once before we start, then try to
+            //retrieve update information
             if (Connection.CheckConnection() == ConnectionStatus.Connected)
                 DependencyManager.GetUpdate();
 
+            //check connection status every 5 seconds for changes
             Connection.RunWatcher(5000);
         }
 
+        /// <summary>
+        /// Button click action for OK button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnConfirm(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();
@@ -83,6 +81,10 @@ namespace GameTTS_GUI.Updater
             Close();
         }
 
+        /// <summary>
+        /// Reflect connection status on UI
+        /// </summary>
+        /// <param name="status"></param>
         public void UpdateConnectionStatus(ConnectionStatus status)
         {
             switch (status)
@@ -100,6 +102,9 @@ namespace GameTTS_GUI.Updater
             }
         }
 
+        /// <summary>
+        /// Add python dependency to manager's queue (see <see cref="DependencyManager.QueueInstall(string, InstallTask)"/>).
+        /// </summary>
         private void QueuePython()
         {
             if (!DependencyManager.IsPythonInstalled)
@@ -146,6 +151,9 @@ namespace GameTTS_GUI.Updater
             }
         }
 
+        /// <summary>
+        /// Add install script execution to manager's queue (see <see cref="DependencyManager.QueueInstall(string, InstallTask)"/>).
+        /// </summary>
         private void QueueDependencies()
         {
             if(!DependencyManager.IsPyDepInstalled)
@@ -168,6 +176,9 @@ namespace GameTTS_GUI.Updater
             }
         }
 
+        /// <summary>
+        /// Start model download. Doesn't require installation or other special treatment.
+        /// </summary>
         private void DownloadModel()
         {
             if (!DependencyManager.IsModelInstalled)
@@ -211,8 +222,18 @@ namespace GameTTS_GUI.Updater
             }
         }
 
+        /// <summary>
+        /// Cancel button delegate.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnCancel(object sender, RoutedEventArgs e) => Close();
 
+        /// <summary>
+        /// Fired when window is about to be closed (either by program or user input).
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CloseRequest(object sender, CancelEventArgs e)
         {
             if (!CanContinue)
@@ -230,6 +251,12 @@ namespace GameTTS_GUI.Updater
             }
         }
 
+        /// <summary>
+        /// Check all method that gets the install status of dependencies and automatically queues the ones
+        /// not installed. Might get called quite a lot, so there's room for improvement.<br/>
+        /// <see cref="DependencyManager"/> handles queuing, so no duplicates are being created by calling
+        /// this method multiple times.
+        /// </summary>
         private void CheckDependencies()
         {
             Dispatcher.Invoke(delegate
@@ -246,7 +273,6 @@ namespace GameTTS_GUI.Updater
                     TBPythonVersion.Text = "nicht installiert";
                     TBPythonVersion.Foreground = Brushes.Red;
                     QueuePython();
-                    CanContinue = false;
                 }
 
                 if (DependencyManager.IsPyDepInstalled)
@@ -261,7 +287,6 @@ namespace GameTTS_GUI.Updater
                     TBDependencies.Text = "nicht installiert";
                     TBDependencies.Foreground = Brushes.Red;
                     QueueDependencies();
-                    CanContinue = false;
                 }
 
                 if (DependencyManager.IsModelInstalled)
@@ -276,7 +301,6 @@ namespace GameTTS_GUI.Updater
                     TBModel.Text = "nicht installiert";
                     TBModel.Foreground = Brushes.Red;
                     DownloadModel();
-                    CanContinue = false;
                 }
             });
 

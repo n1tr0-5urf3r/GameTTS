@@ -3,7 +3,7 @@
   "OutputPath": "",
   "CsvPathstring": null,
   "OutputFormat": "WAV",
-  "ModelVersion": 6,
+  "ModelVersion": 7,
   "UpdateURL": "https://drive.google.com/uc?export=download&id=17zE74Co2TVbPUaSkKoelLGogkWg0if4x",
-  "InstallScriptVersion": 0
+  "InstallScriptVersion": 1
 }

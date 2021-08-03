@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.NetworkInformation;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GameTTS_GUI.Updater
 {
+    /// <summary>
+    /// Enumeration to provide useful state information about the connection.
+    /// </summary>
     public enum ConnectionStatus
     {
         Undefined,
@@ -17,13 +16,37 @@ namespace GameTTS_GUI.Updater
         ConnectionReestablished
     }
 
+    /// <summary>
+    /// Simple static class that serves as a simple monitor for the users internet connection.<br></br>
+    /// It can send a ping every x milliseconds and updates it's status property accordingly (see <see cref="RunWatcher(long)"/>). 
+    /// Also provides a simple event that can be hooked into after each ping has been evaluated (see <see cref="OnChecked"/>).
+    /// </summary>
     public static class Connection
     {
+        #region -- ping settings
+
+        private const string URL = "google.com";
+        private const int TIMEOUT = 2000;
+
+        #endregion
+
         static Timer connectionChecker;
 
-        public static Action<ConnectionStatus> OnChecked;
-        public static ConnectionStatus LastStatus { get; private set; } = ConnectionStatus.Undefined;
+        /// <summary>
+        /// Simple event that triggers after each connection test and carries the status result.
+        /// </summary>
+        public static event Action<ConnectionStatus> OnChecked;
 
+        /// <summary>
+        /// Connection status after the last ping. 
+        /// </summary>
+        public static ConnectionStatus Status { get; private set; } = ConnectionStatus.Undefined;
+
+        /// <summary>
+        /// Runs a timer (thread) in the background that calls <see cref="CheckConnection"/> method
+        /// periodically with the given intervall. This will fire the <see cref="OnChecked"/> event.
+        /// </summary>
+        /// <param name="checkIntervalMillis"></param>
         public static void RunWatcher(long checkIntervalMillis)
         {
             if (connectionChecker != null)
@@ -35,6 +58,10 @@ namespace GameTTS_GUI.Updater
             }, null, 0, checkIntervalMillis);
         }
 
+
+        /// <summary>
+        /// Used to stop and dispose the timer and unregister any events.
+        /// </summary>
         public static void StopWatcher()
         {
             if(connectionChecker != null)
@@ -46,20 +73,18 @@ namespace GameTTS_GUI.Updater
         }
 
         /// <summary>
-        /// Sends a ping to Google to check internet connectin. Returns true if ping was successful.
+        /// Sends a ping to Google to check internet connection.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The current connection status as <see cref="ConnectionStatus"/></returns>
         public static ConnectionStatus CheckConnection()
         {
             Ping myPing = new Ping();
-            string host = "google.com";
             byte[] buffer = new byte[32];
-            int timeout = 2000;
             PingOptions pingOptions = new PingOptions();
 
             try
             {
-                PingReply reply = myPing.Send(host, timeout, buffer, pingOptions);
+                PingReply reply = myPing.Send(URL, TIMEOUT, buffer, pingOptions);
 
                 if (reply.Status == IPStatus.Success)
                 {
@@ -71,39 +96,41 @@ namespace GameTTS_GUI.Updater
                 SetLastStatus(false);
             }
 
-            return LastStatus;
-        }
+            return Status;
 
-        private static void SetLastStatus(bool pingSucceeded)
-        {
-            switch(LastStatus)
+            //nested function to just use here to determine the current status
+            //based on the outcome of the ping sent
+            void SetLastStatus(bool pingSucceeded)
             {
-                case ConnectionStatus.Undefined:
-                    if (pingSucceeded)
-                        LastStatus = ConnectionStatus.Connected;
-                    else
-                        LastStatus = ConnectionStatus.Disconnected;
-                    break;
-                case ConnectionStatus.ConnectionReestablished:
-                    if (pingSucceeded)
-                        LastStatus = ConnectionStatus.Connected;
-                    else
-                        LastStatus = ConnectionStatus.ConnectionLost;
-                    break;
-                case ConnectionStatus.ConnectionLost:
-                    if (pingSucceeded)
-                        LastStatus = ConnectionStatus.ConnectionReestablished;
-                    else
-                        LastStatus = ConnectionStatus.Disconnected;
-                    break;
-                case ConnectionStatus.Disconnected:
-                    if (pingSucceeded)
-                        LastStatus = ConnectionStatus.ConnectionReestablished;
-                    break;
-                case ConnectionStatus.Connected:
-                    if (!pingSucceeded)
-                        LastStatus = ConnectionStatus.ConnectionLost;
-                    break;
+                switch (Status)
+                {
+                    case ConnectionStatus.Undefined:
+                        if (pingSucceeded)
+                            Status = ConnectionStatus.Connected;
+                        else
+                            Status = ConnectionStatus.Disconnected;
+                        break;
+                    case ConnectionStatus.ConnectionReestablished:
+                        if (pingSucceeded)
+                            Status = ConnectionStatus.Connected;
+                        else
+                            Status = ConnectionStatus.ConnectionLost;
+                        break;
+                    case ConnectionStatus.ConnectionLost:
+                        if (pingSucceeded)
+                            Status = ConnectionStatus.ConnectionReestablished;
+                        else
+                            Status = ConnectionStatus.Disconnected;
+                        break;
+                    case ConnectionStatus.Disconnected:
+                        if (pingSucceeded)
+                            Status = ConnectionStatus.ConnectionReestablished;
+                        break;
+                    case ConnectionStatus.Connected:
+                        if (!pingSucceeded)
+                            Status = ConnectionStatus.ConnectionLost;
+                        break;
+                }
             }
         }
     }

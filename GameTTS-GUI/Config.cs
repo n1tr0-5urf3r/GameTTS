@@ -6,9 +6,17 @@ using System.Text;
 using System.Threading.Tasks;
 using GameTTS_GUI.Updater;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace GameTTS_GUI
 {
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum AudioFormat
+    {
+        WAV,
+        OGG
+    }
+
     public class Config
     {
         #region -- internals
@@ -20,12 +28,33 @@ namespace GameTTS_GUI
 
         #region -- serializable properties
 
+        /// <summary>
+        /// Used to detect any changes if this class gets modified in further updates.
+        /// </summary>
         public int ConfigVersion { get; set; } = LATEST_VERSION;
+        /// <summary>
+        /// The path for any audio files the synthesizer generates.
+        /// </summary>
         public string OutputPath { get; set; }
+        /// <summary>
+        /// Default path to read CSV files from.
+        /// </summary>
         public string CsvPathstring { get; set; }
-        public string OutputFormat { get; set; } = "WAV";
+        /// <summary>
+        /// Audio format of synthesizer output. Can currently be WAV or OGG.
+        /// </summary>
+        public AudioFormat OutputFormat { get; set; } = AudioFormat.WAV;
+        /// <summary>
+        /// Version of the installed model as a single integer (no need for full versioning).
+        /// </summary>
         public int ModelVersion { get; set; }
+        /// <summary>
+        /// URL to the update.json
+        /// </summary>
         public string UpdateURL { get; set; }
+        /// <summary>
+        /// Version of the current install script (no need for full versioning).
+        /// </summary>
         public int InstallScriptVersion { get; set; }
 
         #endregion
@@ -40,6 +69,9 @@ namespace GameTTS_GUI
         public const string ModelPath = @"GameTTS/vits/model/";
         public const string VirtualEnvPath = @"GameTTS/.venv";
 
+        /// <summary>
+        /// Used to provide a means to get version by dependency key."
+        /// </summary>
         [JsonIgnore]
         public Dictionary<string, int> FileVersions
         {
@@ -49,6 +81,10 @@ namespace GameTTS_GUI
                     { "model", _instance.ModelVersion } 
                 };
         }
+
+        /// <summary>
+        /// Dictionary of dependencies downloaded and read from update.json
+        /// </summary>
         [JsonIgnore]
         public Dictionary<string, Dependency> Dependencies { get; set; }
 
