@@ -26,6 +26,7 @@ namespace GameTTS_GUI
     public partial class MainWindow : Window
     {
         private MainData data;
+        private Synthesizer synth = new Synthesizer();
 
         public MainWindow()
         {
@@ -57,35 +58,13 @@ namespace GameTTS_GUI
 
             //ps script/python args
             string args = $"'{LineText.Text}' {data.VoiceMapping[CBGame.Text][CBVoice.Text]} '{CBVoice.Text}' 0.58 0.8 1";
-                //py        exec file           text to speak      speaker ID/name  file content?   variation a/b  speed  path    extension
-                //"python     .\\main.py   'Es funktioniert tatsächlich'    1 'Ash'           false           0.58 0.8    1   false   wav";
-                //"'Hallo, ich bin Ash.' 1 Ash 0.58 0.8 1";
+            //py        exec file           text to speak      speaker ID/name  file content?   variation a/b  speed  path    extension
+            //"python     .\\main.py   'Es funktioniert tatsächlich'    1 'Ash'           false           0.58 0.8    1   false   wav";
+            //"'Hallo, ich bin Ash.' 1 Ash 0.58 0.8 1";
 
             //call python stuff here
-            {
-                var script = Environment.CurrentDirectory + @"\GameTTS\run.ps1";
-
-                ProcessStartInfo processInfo = new ProcessStartInfo()
-                {
-                    FileName = "powershell.exe",
-                    Arguments = $"-NoProfile -ExecutionPolicy unrestricted \"{script}\" " + args,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using (Process process = Process.Start(processInfo))
-                {
-                    using (StreamReader myStreamReader = process.StandardOutput)
-                    {
-                        var outputString = myStreamReader.ReadLine();
-                        process.WaitForExit();
-
-                        Console.WriteLine(outputString);
-                    }
-                }
-            }
+            synth.StartProcess();
+            //synth.SendInput("lol");
 
             string fileName = null;
             if (string.IsNullOrEmpty(FileNameBox.Text))
