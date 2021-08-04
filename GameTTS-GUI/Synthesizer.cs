@@ -45,7 +45,7 @@ namespace GameTTS_GUI
             }
         }
 
-        public void SendInput(VoiceLine input) => SendInput(JsonConvert.SerializeObject(input));
+        public void SendInput(SynthesizerTask input) => SendInput(JsonConvert.SerializeObject(input));
 
         public void StartProcess()
         {

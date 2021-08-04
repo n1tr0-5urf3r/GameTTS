@@ -47,17 +47,28 @@ namespace GameTTS_GUI
             //restore preferences
             ExportPathBox.Text = Config.Get.OutputPath;
             DefaultCSVBox.Text = Config.Get.CsvPathstring;
+            CBAudioFormat.SelectedIndex = (int)Config.Get.OutputFormat;
+
+            //send first settings to synth process
+            //synth.StartProcess();
+            //synth.SendInput(new SynthesizerTask
+            //{
+            //    Task = TaskType.SynthSetting,
+            //    VarianceA = data.Settings.VarianceA,
+            //    VarianceB = data.Settings.VarianceB,
+            //    Speed = data.Settings.Speed
+            //});
         }
 
         private void OnGenerate(object sender, RoutedEventArgs e)
         {
-            var line = new VoiceLine { Game = CBGame.Text, Voice = CBVoice.Text, Text = LineText.Text };
+            var line = new SynthesizerTask { Task = TaskType.SynthText, Game = CBGame.Text, Voice = CBVoice.Text, Text = LineText.Text };
             
             if (!Directory.Exists(Config.TempPath))
                 Directory.CreateDirectory(Config.TempPath);
 
             //ps script/python args
-            string args = $"'{LineText.Text}' {data.VoiceMapping[CBGame.Text][CBVoice.Text]} '{CBVoice.Text}' 0.58 0.8 1";
+            //string args = $"'{LineText.Text}' {data.VoiceMapping[CBGame.Text][CBVoice.Text]} '{CBVoice.Text}' 0.58 0.8 1";
             //py        exec file           text to speak      speaker ID/name  file content?   variation a/b  speed  path    extension
             //"python     .\\main.py   'Es funktioniert tatsächlich'    1 'Ash'           false           0.58 0.8    1   false   wav";
             //"'Hallo, ich bin Ash.' 1 Ash 0.58 0.8 1";
@@ -65,6 +76,7 @@ namespace GameTTS_GUI
             //call python stuff here
             synth.StartProcess();
             //synth.SendInput("lol");
+            //synth.SendInput(line);
 
             string fileName = null;
             if (string.IsNullOrEmpty(FileNameBox.Text))
@@ -102,13 +114,16 @@ namespace GameTTS_GUI
 
         private void SelectExportPath(object sender, RoutedEventArgs e)
         {
-            string path;
+            string path = "";
             System.Windows.Forms.FolderBrowserDialog folder = new System.Windows.Forms.FolderBrowserDialog();
             if (folder.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 path = folder.SelectedPath;
                 ExportPathBox.Text = path;
             }
+
+            Config.Get.OutputPath = path;
+            Config.Save();
         }
 
         private void PlayVoiceSample(object sender, RoutedEventArgs e)
@@ -168,5 +183,11 @@ namespace GameTTS_GUI
         private void ShowFileNameBox(object sender, RoutedEventArgs e) => FileNamePanel.Visibility = Visibility.Visible;
 
         private void HideFileNameBox(object sender, RoutedEventArgs e) => FileNamePanel.Visibility = Visibility.Collapsed;
+
+        private void AudioFormatChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Config.Get.OutputFormat = (AudioFormat)CBAudioFormat.SelectedIndex;
+            Config.Save();
+        }
     }
 }

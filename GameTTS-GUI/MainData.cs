@@ -38,7 +38,7 @@ namespace GameTTS_GUI
         /// <summary>
         /// List that holds all (finished or unfinished) synthesizer jobs. 
         /// </summary>
-        public List<VoiceLine> OutputListData { get; private set; } = new List<VoiceLine>();
+        public List<SynthesizerTask> OutputListData { get; private set; } = new List<SynthesizerTask>();
         /// <summary>
         /// Current settings for the synthesizer.
         /// </summary>
@@ -49,6 +49,13 @@ namespace GameTTS_GUI
             //load json voice mapping
             VoiceMapping = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, int>>>
                 (File.ReadAllText(Config.SpeakerMapPath));
+
+            Settings = new LineSettings
+            {
+                Speed = Config.Get.SettingSpeed,
+                VarianceA = Config.Get.SettingVarianceA,
+                VarianceB = Config.Get.SettingVarianceB
+            };
 
             GameList = VoiceMapping.Keys.ToArray();
             VoiceLists = new List<string>[GameList.Length];

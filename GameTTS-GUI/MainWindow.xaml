@@ -84,7 +84,7 @@
                 </DockPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label>Ausgabeformat: </Label>
-                    <ComboBox SelectedIndex="0">
+                    <ComboBox x:Name="CBAudioFormat" SelectionChanged="AudioFormatChanged">
                         <System:String>WAV (16 Bit PCM)</System:String>
                         <System:String>OGG</System:String>
                     </ComboBox>

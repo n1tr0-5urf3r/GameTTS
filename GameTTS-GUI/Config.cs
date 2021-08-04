@@ -43,7 +43,20 @@ namespace GameTTS_GUI
         /// <summary>
         /// Audio format of synthesizer output. Can currently be WAV or OGG.
         /// </summary>
-        public AudioFormat OutputFormat { get; set; } = AudioFormat.WAV;
+        public AudioFormat OutputFormat { get; set; }
+        /// <summary>
+        /// Synthesizer setting for variance a.
+        /// </summary>
+        public double SettingVarianceA { get; set; } = 0.58;
+        /// <summary>
+        /// Synthesizer setting for variance b.
+        /// </summary>
+        public double SettingVarianceB { get; set; } = 0.8;
+        /// <summary>
+        /// Synthesizer setting for speech speed.
+        /// </summary>
+        public double SettingSpeed { get; set; } = 1.0;
+
         /// <summary>
         /// Version of the installed model as a single integer (no need for full versioning).
         /// </summary>
@@ -62,7 +75,7 @@ namespace GameTTS_GUI
         #region -- non-serializable properties and constants
 
         [JsonIgnore]
-        public const string SpeakerMapPath = @"GameTTS/resources/json-mapping/game_speaker_map.json";
+        public const string SpeakerMapPath = @"Resources/json/game_speaker_map.json";
         public const string TempPath = @"GameTTS/tmp/";
         public const string SamplesPath = @"Resources/VoiceSamples/";
         public const string UpdateFilePath = @"Resources/json/update.json";

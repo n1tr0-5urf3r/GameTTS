@@ -76,7 +76,7 @@
     <Compile Include="Updater\UpdateWindow.xaml.cs">
       <DependentUpon>UpdateWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VoiceLine.cs" />
+    <Compile Include="SynthesizerTask.cs" />
     <Page Include="LineSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -119,28 +119,7 @@
     <Content Include="GameTTS\requirements.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="GameTTS\resources\app-config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="GameTTS\resources\json-mapping\0_sorted.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="GameTTS\resources\json-mapping\1_sorted.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="GameTTS\resources\json-mapping\2_sorted.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="GameTTS\resources\json-mapping\3_sorted.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="GameTTS\resources\json-mapping\game_map.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="GameTTS\resources\json-mapping\game_speaker_map.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="GameTTS\resources\json-mapping\speaker_map.json">
+    <Content Include="Resources\json\game_speaker_map.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="GameTTS\run.ps1">
@@ -155,9 +134,7 @@
     <Content Include="GameTTS\utils\generic_utils.py">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="GameTTS\utils\__init__.py">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="GameTTS\utils\__init__.py" />
     <Content Include="GameTTS\vits\attentions.py">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -191,9 +168,15 @@
     <Content Include="GameTTS\vits\synthesizer.py">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="GameTTS\vits\text\cleaners.py" />
-    <Content Include="GameTTS\vits\text\LICENSE" />
-    <Content Include="GameTTS\vits\text\symbols.py" />
+    <Content Include="GameTTS\vits\text\cleaners.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GameTTS\vits\text\LICENSE">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GameTTS\vits\text\symbols.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="GameTTS\vits\text\__init__.py" />
     <Content Include="GameTTS\vits\transforms.py">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -201,9 +184,7 @@
     <Content Include="GameTTS\vits\utils.py">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="GameTTS\vits\__init__.py">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="GameTTS\vits\__init__.py" />
     <Content Include="Resources\VoiceSamples\1.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -1,6 +1,9 @@
 ﻿{
   "ConfigVersion": 1,
   "OutputPath": "",
+  "SettingVarianceA": 0.58,
+  "SettingVarianceB": 0.8,
+  "SettingSpeed": 1.0,
   "CsvPathstring": null,
   "OutputFormat": "WAV",
   "ModelVersion": 7,

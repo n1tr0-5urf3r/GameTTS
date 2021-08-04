@@ -42,6 +42,11 @@ namespace GameTTS_GUI
             settings.VarianceA = SLVarA.Value;
             settings.VarianceB = SLVarB.Value;
 
+            Config.Get.SettingSpeed = settings.Speed;
+            Config.Get.SettingVarianceA = settings.VarianceA;
+            Config.Get.SettingVarianceB = settings.VarianceB;
+            Config.Save();
+
             Close();
         }
     }
