@@ -298,7 +298,7 @@ namespace GameTTS_GUI.Updater
                 }
             }
 
-            return hashString.Equals(checksum);
+            return hashString.Equals(checksum, StringComparison.OrdinalIgnoreCase);
         }
 
 
