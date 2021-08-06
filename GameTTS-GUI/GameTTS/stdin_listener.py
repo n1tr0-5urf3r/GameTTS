@@ -5,7 +5,7 @@ import concurrent.futures
 import time
 from datetime import datetime
 from vits.synthesizer import Synthesizer
-from utils.io import parse_csv, parse_json, prepare_for_queue, save_audio
+from utils.generic_utils import parse_csv, parse_json, prepare_for_queue, save_audio
 from utils.config import PATHS, APP_SETTINGS
 
 # init logging
@@ -35,12 +35,12 @@ def call_synthesizer(data: dict):
         data (dict): Contains information for the synthesizer
     """
     try:
-        filename = ".".join(
-            [data["FileName"] + "-" + datetime.now().strftime("%S%f"), "wav"]
+        filename = "_".join(
+            [data["Voice"], str(data["VoiceID"]),datetime.now().strftime("%S%f")]
         )
         # filename = data["FileName"]
-        speaker_id = data["SpeakerID"]
-        text = data["InputText"]
+        speaker_id = data["VoiceID"]
+        text = data["Text"]
 
         audio_data = synthesizer.inference(
             str(text),
@@ -101,13 +101,15 @@ def process_task(json_obj: str) -> str:
     Returns:
         str: [description]
     """
-    if json_obj["Task"] == "exit":
+    if json_obj["Task"] == "SynthExit":
         sys.exit(0)
-    elif json_obj["Task"] == "synth_csv":
+    elif json_obj["Task"] == "SynthSetting":
+        pass
+    elif json_obj["Task"] == "SynthCSV":
         batch_data = parse_csv(json_obj)
         for data in batch_data:
             input_queue.put(data)
-    elif json_obj["Task"] == "synth_text":
+    elif json_obj["Task"] == "SynthText":
         data = prepare_for_queue(json_obj=json_obj)
         input_queue.put(data)
     else:
@@ -116,12 +118,13 @@ def process_task(json_obj: str) -> str:
 
 wk_thread = threading.Thread(target=queue_worker, daemon=True).start()
 
-json_input = '{"Task": "synth_text", "SpeakerID": 44, "InputText": "Das ist ein Test.","FileName": "tmp_file_44", "CsvPath": null }'
 # main loop: stuff input in the queue
+
 try:
     for std_input in sys.stdin:
 
-        json_obj = parse_json(json_input)
+        logging.info(std_input)
+        json_obj = parse_json(std_input)
 
         if json_obj:
             process_task(json_obj)
@@ -130,8 +133,6 @@ try:
         #     process_input_data(json_object["Batch"])
         # else:
         #     logging.error("invalid input")
-
-        sys.stdout.flush()
 
     print("All task requests sent\n", end="")
 

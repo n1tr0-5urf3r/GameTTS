@@ -50,7 +50,7 @@ namespace GameTTS_GUI
             CBAudioFormat.SelectedIndex = (int)Config.Get.OutputFormat;
 
             //send first settings to synth process
-            //synth.StartProcess();
+            synth.StartProcess();
             //synth.SendInput(new SynthesizerTask
             //{
             //    Task = TaskType.SynthSetting,
@@ -62,8 +62,9 @@ namespace GameTTS_GUI
 
         private void OnGenerate(object sender, RoutedEventArgs e)
         {
-            var line = new SynthesizerTask { Task = TaskType.SynthText, Game = CBGame.Text, Voice = CBVoice.Text, Text = LineText.Text };
-            
+            int voiceIndex = GetVoiceIndex(CBGame.Text, CBVoice.Text);
+            var line = new SynthesizerTask { Task = TaskType.SynthText, Game = CBGame.Text, Voice = CBVoice.Text, VoiceID = voiceIndex, Text = LineText.Text };
+
             if (!Directory.Exists(Config.TempPath))
                 Directory.CreateDirectory(Config.TempPath);
 
@@ -74,9 +75,8 @@ namespace GameTTS_GUI
             //"'Hallo, ich bin Ash.' 1 Ash 0.58 0.8 1";
 
             //call python stuff here
-            synth.StartProcess();
             //synth.SendInput("lol");
-            //synth.SendInput(line);
+            synth.SendInput(line);
 
             string fileName = null;
             if (string.IsNullOrEmpty(FileNameBox.Text))
@@ -94,7 +94,7 @@ namespace GameTTS_GUI
         private void OnDeleteItem(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete || e.Key == Key.Back)
-                if(FileList.SelectedIndex >= 0)
+                if (FileList.SelectedIndex >= 0)
                 {
                     data.OutputListData.RemoveAt(FileList.SelectedIndex);
                     FileList.Items.Refresh();
@@ -146,7 +146,7 @@ namespace GameTTS_GUI
 
         private void ExportAll(object sender, RoutedEventArgs e)
         {
-            if(string.IsNullOrEmpty(ExportPathBox.Text)
+            if (string.IsNullOrEmpty(ExportPathBox.Text)
             || !Directory.Exists(ExportPathBox.Text))
             {
                 MessageBox.Show("Der angegebene Export-Pfad ist ungültig!", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -157,8 +157,8 @@ namespace GameTTS_GUI
 
             if (!path.EndsWith("\\"))
                 path += "\\";
-                  
-            foreach(var item in data.OutputListData)
+
+            foreach (var item in data.OutputListData)
             {
                 int index = GetVoiceIndex(item.Game, item.Voice);
                 FileInfo info = new FileInfo(item.Path);

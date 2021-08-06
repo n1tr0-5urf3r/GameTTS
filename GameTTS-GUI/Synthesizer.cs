@@ -71,10 +71,10 @@ namespace GameTTS_GUI
                 }
 
                 //probably not necessary, stays here for testing only
-                while(!process.HasExited)
-                {
-                    //wait
-                }
+                //while(!process.HasExited)
+                //{
+                //    //wait
+                //}
             }).ContinueWith(result =>
             {
                 Console.WriteLine($"Synthesizer task exited with code {exitCode}.");

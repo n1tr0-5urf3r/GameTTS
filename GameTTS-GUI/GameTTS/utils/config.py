@@ -5,8 +5,8 @@ from pathlib import Path
 #######################
 class PATHS:
     APP_FOLDER = Path(Path(__name__).parent.resolve())
-    TTS_CONFIG_PATH = Path(APP_FOLDER, "vits/model/GruutModel", "config.json")
-    TTS_MODEL_PATH = Path(APP_FOLDER, "vits/model/GruutModel", "G_490000.pth")
+    TTS_CONFIG_PATH = Path(APP_FOLDER, "vits/model/", "config.json")
+    TTS_MODEL_PATH = Path(APP_FOLDER, "vits/model/", "G_800000.pth")
     LOGGING_PATH = Path(APP_FOLDER, "log/", "debug.log")
 
 
@@ -15,7 +15,7 @@ class PATHS:
 #######################
 class APP_SETTINGS:
     EXPORT_FILE_ENABLED = False
-    EXPORT_FILE_PATH = "temp_output"
+    EXPORT_FILE_PATH = "tmp"
     EXPORT_FILE_EXT = "wav"
 
 

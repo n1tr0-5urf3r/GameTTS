@@ -29,6 +29,7 @@ namespace GameTTS_GUI
         public string Game { get; set; }
         public string Text { get; set; }
         public string Voice { get; set; }
+        public int VoiceID { get; set; }
         public string Path { get; set; }
         public double VarianceA { get; set; }
         public double VarianceB { get; set; }
