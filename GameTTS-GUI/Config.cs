@@ -81,6 +81,8 @@ namespace GameTTS_GUI
         public const string UpdateFilePath = @"Resources/json/update.json";
         public const string ModelPath = @"GameTTS/vits/model/";
         public const string VirtualEnvPath = @"GameTTS/.venv";
+        public const string LogPath = @"GameTTS/log/";
+        public const string LogFile = @"debug.log";
 
         /// <summary>
         /// Used to provide a means to get version by dependency key."

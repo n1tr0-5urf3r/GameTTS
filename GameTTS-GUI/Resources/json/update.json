@@ -1,0 +1,34 @@
+{
+  "python": {
+    "Name": "python",
+    "VersionMajor": 3,
+    "VersionMinor": 0,
+    "URL": "https://www.python.org/ftp/python/3.9.6/python-3.9.6-amd64.exe"
+  },
+  "pyDependencies": {
+    "Name": "install.ps1",
+    "VersionMajor": 1,
+    "VersionMinor": 0,
+    "URL": "https://placeholder.gdrive/install.ps1"
+  },
+  "model": {
+    "Name": "G_800000.pth",
+    "VersionMajor": 8,
+    "VersionMinor": 0,
+    "URL": "https://drive.google.com/uc?id=1fTyyVcC76m4YhCSrlpG5dYnwNC_h1KFB",
+    "Checksum": "F42E3778A4AFB8B390A08795B965A2A8F0049A1B"
+  },
+  "speakerMap": {
+    "Name": "game_speaker_map.json",
+    "VersionMajor": 8,
+    "VersionMinor": 0,
+    "URL": "https://drive.google.com/uc?id=1fTyyVcC76m4YhCSrlpG5dYnwNC_h1KFB",
+  },
+  "samples": {
+    "Name": "samples.zip",
+    "VersionMajor": 8,
+    "VersionMinor": 0,
+    "URL": "https://drive.google.com/uc?id=1fTyyVcC76m4YhCSrlpG5dYnwNC_h1KFB",
+    "Checksum": "xxxxxxxxx"
+  }
+}

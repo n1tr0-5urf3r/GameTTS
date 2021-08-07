@@ -27,6 +27,7 @@ namespace GameTTS_GUI
     {
         private MainData data;
         private Synthesizer synth = new Synthesizer();
+        LineSettingsWindow settingsDialog;
 
         public MainWindow()
         {
@@ -51,13 +52,7 @@ namespace GameTTS_GUI
 
             //send first settings to synth process
             synth.StartProcess();
-            //synth.SendInput(new SynthesizerTask
-            //{
-            //    Task = TaskType.SynthSetting,
-            //    VarianceA = data.Settings.VarianceA,
-            //    VarianceB = data.Settings.VarianceB,
-            //    Speed = data.Settings.Speed
-            //});
+            SendSynthSettings();
         }
 
         private void OnGenerate(object sender, RoutedEventArgs e)
@@ -138,10 +133,33 @@ namespace GameTTS_GUI
 
         private void OnSettings(object sender, RoutedEventArgs e)
         {
-            LineSettingsWindow window = new LineSettingsWindow(data.Settings);
-            window.Owner = this;
-            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            window.ShowDialog();
+            if (settingsDialog == null)
+            {
+                settingsDialog = new LineSettingsWindow(data.Settings);
+                settingsDialog.Owner = this;
+                settingsDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                settingsDialog.Apply += () =>
+                {
+                    Config.Get.SettingSpeed = data.Settings.Speed;
+                    Config.Get.SettingVarianceA = data.Settings.VarianceA;
+                    Config.Get.SettingVarianceB = data.Settings.VarianceB;
+                    Config.Save();
+                    SendSynthSettings();
+                };
+            }
+
+            settingsDialog.ShowDialog();
+        }
+
+        private void SendSynthSettings()
+        {
+            synth.SendInput(new SynthesizerTask
+            {
+                Task = TaskType.SynthSetting,
+                VarianceA = data.Settings.VarianceA,
+                VarianceB = data.Settings.VarianceB,
+                Speed = data.Settings.Speed
+            });
         }
 
         private void ExportAll(object sender, RoutedEventArgs e)

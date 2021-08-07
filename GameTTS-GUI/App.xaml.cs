@@ -14,6 +14,20 @@ namespace GameTTS_GUI
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            //check for necessary prerequisite files and folders here
+            
+            //needed for synthesizer logs, will crash if not present
+            if (!Directory.Exists(Config.LogPath))
+                Directory.CreateDirectory(Config.LogPath);
+
+            if (File.Exists(Config.LogFile))
+                File.CreateText(Config.LogFile);
+
+            base.OnStartup(e);
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
             //remove unfinshed (or finished) downloads

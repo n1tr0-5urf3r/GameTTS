@@ -259,9 +259,15 @@ namespace GameTTS_GUI.Updater
         /// </summary>
         private void CheckDependencies()
         {
+            //only call check function once, result is needed multiple times
+            //esp. model checking takes time regarding checksum calculation
+            bool hasPy = DependencyManager.IsPythonInstalled;
+            bool hasPyDep = DependencyManager.IsPyDepInstalled;
+            bool hasMdl = DependencyManager.IsModelInstalled;
+
             Dispatcher.Invoke(delegate
             {
-                if (DependencyManager.IsPythonInstalled)
+                if (hasPy)
                 {
                     TBPythonVersion.Text = DependencyManager.GetVersion("python").ToString();
                     TBPythonVersion.Foreground = Brushes.Green;
@@ -275,7 +281,7 @@ namespace GameTTS_GUI.Updater
                     QueuePython();
                 }
 
-                if (DependencyManager.IsPyDepInstalled)
+                if (hasPyDep)
                 {
                     TBDependencies.Text = "installiert";
                     TBDependencies.Foreground = Brushes.Green;
@@ -289,7 +295,7 @@ namespace GameTTS_GUI.Updater
                     QueueDependencies();
                 }
 
-                if (DependencyManager.IsModelInstalled)
+                if (hasMdl)
                 {
                     TBModel.Text = Config.Get.Dependencies["model"].Name;
                     TBModel.Foreground = Brushes.Green;
@@ -304,7 +310,7 @@ namespace GameTTS_GUI.Updater
                 }
             });
 
-            CanContinue = DependencyManager.IsPythonInstalled && DependencyManager.IsPyDepInstalled && DependencyManager.IsModelInstalled;
+            CanContinue = hasPy && hasPyDep && hasMdl;
 
             if(!CanContinue)
                 DependencyManager.InstallAll();

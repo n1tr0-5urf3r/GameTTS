@@ -20,6 +20,7 @@ namespace GameTTS_GUI
     public partial class LineSettingsWindow : Window
     {
         private LineSettings settings;
+        public event Action Apply;
 
         public LineSettingsWindow(LineSettings settings)
         {
@@ -42,12 +43,8 @@ namespace GameTTS_GUI
             settings.VarianceA = SLVarA.Value;
             settings.VarianceB = SLVarB.Value;
 
-            Config.Get.SettingSpeed = settings.Speed;
-            Config.Get.SettingVarianceA = settings.VarianceA;
-            Config.Get.SettingVarianceB = settings.VarianceB;
-            Config.Save();
-
-            Close();
+            Apply?.Invoke();
+            Hide();
         }
     }
 }
