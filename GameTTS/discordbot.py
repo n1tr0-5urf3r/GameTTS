@@ -25,9 +25,9 @@ try:
 except ImportError as err:
     eel.call_torch_modal()  # call javascript modal if torch not available
 
-GUILDS = [discord.Object(id=0)]
+GUILDS = [discord.Object(id=360492773633163276), discord.Object(id=648587747099017227), discord.Object(id=391211454746853378)]
 # Enter token here
-TOKEN = ""
+TOKEN = "OTUwNDE0NTcwMzU3NDExOTIx.YiYkiw.X8SKOqeH-VzeYd99LJNKtuGTk9M"
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -53,6 +53,7 @@ class MyClient(discord.Client):
 
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
+params_speech = {"speech_var_a": 0.3, "speech_var_b": 0.5, "speech_speed": 1.3}
 
 def get_speakers():
     games = {0: "gothic", 1: "risen", 2: "skyrim", 3: "witcher"}
