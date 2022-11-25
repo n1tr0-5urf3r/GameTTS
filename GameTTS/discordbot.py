@@ -25,9 +25,9 @@ try:
 except ImportError as err:
     eel.call_torch_modal()  # call javascript modal if torch not available
 
-GUILDS = [discord.Object(id=360492773633163276), discord.Object(id=648587747099017227), discord.Object(id=391211454746853378)]
+GUILDS = [discord.Object(id=0)]
 # Enter token here
-TOKEN = "OTUwNDE0NTcwMzU3NDExOTIx.YiYkiw.X8SKOqeH-VzeYd99LJNKtuGTk9M"
+TOKEN = ""
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
